@@ -45,7 +45,7 @@ router.get('/:id', function(req, res, next) {
         })
         .catch(function (err) {
           logger.error(`${err} - uid: ${uid} - IP: ${ip}`);
-          next(err);
+          next();
         });
     }
   }).catch(function (err) {

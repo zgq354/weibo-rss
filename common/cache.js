@@ -8,13 +8,18 @@ var Q = require('bluebird');
 Q.promisifyAll(redis.RedisClient.prototype);
 Q.promisifyAll(redis.Multi.prototype);
 
+var config = {
+    host: process.env.REDIS_PORT_6379_TCP_ADDR,
+    port: process.env.REDIS_PORT_6379_TCP_PORT
+};
+
+if (process.env.REDIS_PASSWORD) {
+    config.password = process.env.REDIS_PASSWORD
+}
+
 var client;
-if (process.env.REDIS_PORT_6379_TCP_ADDR && process.env.REDIS_PORT_6379_TCP_PORT && process.env.REDIS_PASSWORD) {
-    client = redis.createClient({
-        host: process.env.REDIS_PORT_6379_TCP_ADDR,
-        port: process.env.REDIS_PORT_6379_TCP_PORT,
-        password: process.env.REDIS_PASSWORD
-    });
+if (process.env.REDIS_PORT_6379_TCP_ADDR && process.env.REDIS_PORT_6379_TCP_PORT) {
+    client = redis.createClient(config);
 } else {
     client = redis.createClient();
 }

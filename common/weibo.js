@@ -108,7 +108,12 @@ function format_status(status) {
     // 长文章的处理
     var temp = status.longText ? status.longText.longTextContent.replace(/\n/g, '<br>')
         : status.text.replace(/\<span\sclass\=\"url\-icon\"\>.*?\<\/span\>/g, '');
-    temp += "<br><br>";
+    temp += "<br>";
+
+    // 处理外部链接
+    temp = temp.replace(/https:\/\/weibo\.cn\/sinaurl\/.*?&u=(http.*?\")/g, function (match, p1) {
+        return decodeURIComponent(p1);
+    });
 
     // 处理转发的微博
     if (status.retweeted_status) {

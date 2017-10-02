@@ -3,6 +3,7 @@
  */
 var axios = require('axios');
 var RSS = require('rss');
+var cache = require('./cache');
 
 const API_URL = 'https://m.weibo.cn/api/container/getIndex';
 const DETAIL_URL = 'https://m.weibo.cn/status/';
@@ -46,20 +47,15 @@ exports.fetchRSS = function(uid) {
             // 分别抓取每一条微博的具体内容，只有访问每条微博的详情的时候才能获取到完整的全文和时间信息
             var listPromises = [];
             list.forEach(function (item) {
-                listPromises.push(axios.get(DETAIL_URL + item.mblog.id));
+                listPromises.push(getDetials(item.mblog.id));
             });
 
             // 下一步：处理构造好的Promise的并发请求结果
-            return axios.all(listPromises);
+            return Promise.all(listPromises);
         }).then(function (resArr) {
-            resArr.forEach(function (res) {
-                var data = res.data;
-
-                // 先去掉换行，再提取json
-                data = data.replace(/\n/g, '').match(/\$render_data\s\=\s\[(.*?\})\]\[0\]/);
-                data = data ? data[1] : {};
+            resArr.forEach(function (data) {
+                // 解析json
                 data = JSON.parse(data);
-
                 // 构造feed中的item
                 feed.item({
                     title: data.status.status_title,
@@ -78,6 +74,34 @@ exports.fetchRSS = function(uid) {
         })
     });
 };
+
+// 自动缓存单条微博详情，减少并发请求数量
+function getDetials(id) {
+    return new Promise(function (resolve, reject) {
+        var key = `weibo-rss-status-${id}`;
+        cache.get(key).then(function (result) {
+            if (result) {
+                resolve(result);
+            } else {
+                // 缓存不存在则发出请求
+                axios.get(DETAIL_URL + id).then(function (res) {
+                    data = res.data;
+                    // 先去掉换行，再提取json
+                    data = data.replace(/\n/g, '').match(/\$render_data\s\=\s\[(.*?\})\]\[0\]/);
+                    data = data ? data[1] : {};
+                    // 去除多余空白字符
+                    data = JSON.stringify(JSON.parse(data));
+                    // 设置缓存
+                    cache.set(key, data, 7200);
+                }).catch(function (err) {
+                    reject(err);
+                })
+            }
+        }).catch(function (err) {
+            reject(err);
+        })
+    });
+}
 
 // 格式化每条微博的HTML
 function format_status(status) {

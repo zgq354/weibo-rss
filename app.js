@@ -6,7 +6,7 @@ var weibo = require('./routes/weibo');
 
 var app = express();
 
-app.use(logger('common'));
+// app.use(logger('dev'));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/rss', weibo);

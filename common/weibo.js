@@ -27,7 +27,7 @@ exports.fetchRSS = function(uid) {
                 site_url: PROFILE_URL + res.data.userInfo.id,
                 title: res.data.userInfo.screen_name + '的微博',
                 description: res.data.userInfo.description,
-                generator: 'weibo-rss',
+                generator: 'https://github.com/zgq354/weibo-rss',
                 ttl: 10
             });
 

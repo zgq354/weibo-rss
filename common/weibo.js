@@ -93,6 +93,8 @@ function getDetials(id) {
                     data = JSON.stringify(JSON.parse(data));
                     // 设置缓存
                     cache.set(key, data, 7200);
+                    // 别忘了返回数据
+                    resolve(data);
                 }).catch(function (err) {
                     reject(err);
                 })

@@ -19,6 +19,9 @@ exports.fetchRSS = function(uid) {
                 value: uid
             }
         }).then(function (res) {
+            if (!res.data.userInfo) {
+                return reject('User not found');
+            }
             // 初始化 feed对象
             feed = new RSS({
                 site_url: PROFILE_URL + res.data.userInfo.id,

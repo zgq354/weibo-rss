@@ -110,7 +110,7 @@ function format_status(status) {
     // 长文章的处理
     var temp = status.longText ? status.longText.longTextContent.replace(/\n/g, '<br>')
         : status.text.replace(/\<span\sclass\=\"url\-icon\"\>.*?\<\/span\>/g, '');
-    temp += "<br>";
+    temp += "<br><br>";
 
     // 处理外部链接
     temp = temp.replace(/https:\/\/weibo\.cn\/sinaurl\/.*?&u=(http.*?\")/g, function (match, p1) {

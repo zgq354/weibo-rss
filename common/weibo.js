@@ -107,9 +107,9 @@ function getDetials(id) {
 
 // 格式化每条微博的HTML
 function format_status(status) {
-    // 长文章的处理
+    // 长文章，表情图标的处理
     var temp = status.longText ? status.longText.longTextContent.replace(/\n/g, '<br>')
-        : status.text.replace(/\<span\sclass\=\"url\-icon\"\>.*?\<\/span\>/g, '');
+        : status.text.replace(/<img\s(src="[^"]*?")>/g, '<img $1 style="width:1em;height:1em;">');
     temp += "<br><br>";
 
     // 处理外部链接

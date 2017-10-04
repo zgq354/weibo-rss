@@ -59,7 +59,7 @@ exports.fetchRSS = function(uid) {
                 // 构造feed中的item
                 feed.item({
                     title: data.status.status_title,
-                    description: format_status(data.status),
+                    description: formatStatus(data.status),
                     url: DETAIL_URL + data.status.id,
                     guid: DETAIL_URL + data.status.id,
                     date: new Date(data.status.created_at)
@@ -106,7 +106,7 @@ function getDetials(id) {
 }
 
 // 格式化每条微博的HTML
-function format_status(status) {
+function formatStatus(status) {
     // 长文章，表情图标的处理
     var temp = status.longText ? status.longText.longTextContent.replace(/\n/g, '<br>')
         : status.text.replace(/<img\s(src="[^"]*?")>/g, '<img $1 style="width:1em;height:1em;">');
@@ -124,7 +124,7 @@ function format_status(status) {
             status.retweeted_status.user.screen_name +
             '</a>: ';
         // 插入转发的微博
-        temp += format_status(status.retweeted_status);
+        temp += formatStatus(status.retweeted_status);
     }
 
     // 添加微博配图

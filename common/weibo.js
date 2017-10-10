@@ -130,7 +130,7 @@ function formatStatus(status) {
     // 添加微博配图
     if (status.pics) {
         status.pics.forEach(function (item) {
-            temp += '<img src="' + item.url + '"><br><br>';
+            temp += '<img src="' + item.large.url + '"><br><br>';
         });
     }
     return temp;

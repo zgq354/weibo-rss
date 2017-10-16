@@ -2,27 +2,26 @@
 把某人的微博转换成 RSS Feed，支持长微博，表情，图片，链接的完整输出
 
 ## 介绍
-基于微博HTML5版的API实现  
+本项目利用微博HTML5版的API获取数据  
 
-Demo: https://api.izgq.net/weibo/rss/1461522430
+Demo: https://api.izgq.net/weibo/
 
 ## 使用
 可以直接使用我搭建好的服务：
 https://api.izgq.net/weibo/rss/{微博博主的uid}
 
-uid获取：方式很多，这里介绍其中一种。  
-在 [微博HTML5版](https://m.weibo.cn/) 中进入需要订阅的人的微博主页，浏览器的URL中的数字即为博主的uid  
+uid获取：
+可在主页中粘贴微博地址，自动转换为RSS地址
+https://api.izgq.net/weibo/
 
-如：
-```
-https://m.weibo.cn/u/1461522430
-```
-uid为 1461522430
-
+若选择自己搭建：  
+相应的链接为：  
+程序主页：http://example.com/  
+RSS地址：http://example.com/rss/{微博博主的uid}  
 
 ## 搭建
 依赖：Node.js, Redis  
-参考项目中的 Dockerfile
+参考项目中的 Dockerfile，需要为程序设置 Redis 连接参数的环境变量  
 
 ## License
 MIT

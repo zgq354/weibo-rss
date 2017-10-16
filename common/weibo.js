@@ -142,9 +142,11 @@ function formatStatus(status) {
     // 处理转发的微博
     if (status.retweeted_status) {
         // console.log(status.retweeted_status);
-        temp += '转发 <a href="' + PROFILE_URL + status.retweeted_status.user.id + '" target="_blank">@' +
-            status.retweeted_status.user.screen_name +
-            '</a>: ';
+        // 当转发的微博被删除时user为null
+        if (status.retweeted_status.user)
+            temp += '转发 <a href="' + PROFILE_URL + status.retweeted_status.user.id + '" target="_blank">@' +
+                status.retweeted_status.user.screen_name +
+                '</a>: ';
         // 插入转发的微博
         temp += formatStatus(status.retweeted_status);
     }

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="renderer" content="webkit" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>新浪微博RSS订阅</title>
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap.min.css">
+    <style>
+        .content {
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 15px;
+        }
+        .head {
+            margin-top: 70px;
+        }
+        .intro {
+            margin-top: 30px;
+        }
+        .loading {
+            margin-top: 20px;
+        }
+        .result {
+            margin-top: 20px;
+        }
+        .footer-bottom {
+            margin-top: 100px;
+        }
+        .reader-list {
+            margin-top: 20px;
+        }
+        #form {
+            margin-top: 18px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="content">
+            <div class="head">
+                <h2 class="text-center">Weibo to RSS</h2>
+                <p class="intro">优雅地使用 RSS 阅读器订阅喜欢的微博博主</p>
+                <p>食用方式：<br>1. 在输入框中粘贴你想订阅的微博地址<br>2. 点击“订阅”按钮</p>
+                <form id="form">
+                    <div class="input-group">
+                        <input id="text-input" type="text" class="form-control" placeholder="https://weibo.com/kaifulee">
+                        <span class="input-group-btn">
+                            <button class="btn btn-default">订阅</button>
+                        </span>
+                    </div>
+                </form>
+            </div>
+            <div class="loading" style="display: none;"><p class="text-center">加载中...</p></div>
+            <div class="result" style="display: none;">
+                <p>RSS地址：</p>
+                <div class="input-group">
+                    <input id="foo" type="text" class="form-control" value="">
+                    <span class="input-group-btn">
+                        <button id="copy-btn" data-clipboard-action="copy" data-clipboard-target="#foo" class="btn btn-default">复制到剪切板</button>
+                    </span>
+                </div>
+                <ul class="reader-list">
+                    <li><a id="inoreader" href="" target="_blank">订阅到Inoreader</a></li>
+                    <li><a id="feedly" href="" target="_blank">订阅到Feedly</a></li>
+                    <li><a id="theoldreader" href="" target="_blank">订阅到TheOldReader</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="footer-bottom">
+    <div class="container">
+        <p class="text-mute text-center">Powered by <a href="https://github.com/zgq354/weibo-rss" target="_blank">weibo-rss</a>.</p>
+    </div>
+</div>
+</body>
+<script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+<script src="js/clipboard.min.js"></script>
+<script>
+    var prefix = {
+        inoreader: "https://www.inoreader.com/?add_feed=",
+        feedly: "https://cloud.feedly.com/#subscription/feed/",
+        theoldreader: "https://theoldreader.com/feeds/subscribe?url="
+    };
+
+    // 初始化Clipboard插件
+    var clipboard = new Clipboard('#copy-btn');
+    clipboard.on('success', function(e) {
+        console.log(e);
+    });
+    clipboard.on('error', function(e) {
+        console.log(e);
+    });
+
+    // 链接处理
+    $('#form').on('submit', function (e) {
+        e.preventDefault();
+        $(".result").hide();
+        $(".loading").show();
+
+        var input = $("#text-input").val();
+        var temp = input.match(/weibo\.(com|cn)\/(u\/)?(\d+)/);
+        if (!temp) {
+            temp = input.match(/weibo\.(com|cn)\/(u\/)?([^?]+?)($|\?)/);
+            if (!temp) {
+                showResult(false);
+            } else {
+                $.get("convert?domain=" + temp[3], function (data) {
+                    showResult(data.uid);
+                }).fail(function (err) {
+                    showResult(false);
+                });
+            }
+        } else {
+            showResult(temp[3]);
+        }
+    });
+    // 显示结果
+    function showResult(uid) {
+        $(".loading").hide();
+        // console.log(uid);
+        if (!uid) {
+            alert("数据获取失败");
+            return;
+        }
+        var baseUrl = location.href.split("?")[0];
+        if (baseUrl.substr(-1, 1) !== "/") baseUrl += "/";
+        var feedUrl = baseUrl + "rss/" + uid;
+
+        $("#foo").val(feedUrl);
+        for (var reader in prefix) {
+            $("#" + reader).attr("href", prefix[reader] + feedUrl);
+        }
+        $(".result").show();
+    }
+</script>
+</html>

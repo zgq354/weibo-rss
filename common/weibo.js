@@ -75,6 +75,28 @@ exports.fetchRSS = function(uid) {
     });
 };
 
+// 通过用户的个性域名获取UID
+exports.getUIDByDomain = function (domain) {
+    return new Promise(function (resolve, reject) {
+        // 向微博发出请求,利用手机版的跳转获取containerid
+        axios.get(PROFILE_URL + domain, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1'
+            }
+        }).then(function (data) {
+            // console.log(data.request.path);
+            const containerId = data.request.path.split("/p/")[1];
+            // 下一步：通过containerid获取uid
+            return axios.get(API_URL, {params: { containerid: containerId }});
+        }).then(function (data) {
+            const uid = data.data.userInfo.id;
+            resolve(uid);
+        }).catch(function (err) {
+            reject(err);
+        });
+    });
+};
+
 // 自动缓存单条微博详情，减少并发请求数量
 function getDetials(id) {
     return new Promise(function (resolve, reject) {

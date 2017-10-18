@@ -14,7 +14,7 @@ router.get('/', function (req, res, next) {
 // 通过用微博个性域名查找uid
 router.get('/convert', function (req, res, next) {
     var domain = req.query['domain'];
-    if (!domain || !/^[a-z0-9]{4,20}$/.test(domain)) {
+    if (!domain || !/^[A-Za-z0-9]{4,20}$/.test(domain)) {
         res.send({
             success: false,
             msg: '参数不合法'

@@ -129,9 +129,15 @@ function getDetials(id) {
 
 // 格式化每条微博的HTML
 function formatStatus(status) {
-    // 长文章，表情图标的处理
-    var temp = status.longText ? status.longText.longTextContent.replace(/\n/g, '<br>')
-        : status.text.replace(/<img\s(src="[^"]*?")>/g, '<img $1 style="width:1em;height:1em;">');
+    // 长文章的处理
+    var temp = status.longText ? status.longText.longTextContent.replace(/\n/g, '<br>') : status.text;
+    // 表情图标转换为文字
+    temp = temp.replace(/<span class="url-icon"><img src=".*?" style="width:1em;height:1em;" alt="(.*?)"><\/span>/g, '$1');
+    // 去掉外部链接的图标
+    temp = temp.replace(/<span class="url-icon"><img src=".*?"><\/span><\/i>/g, '');
+    // 去掉多余无意义的标签
+    temp = temp.replace(/<span class="surl-text">/g, '');
+    // 最后插入两个空行，让转发的微博排版更加美观一些
     temp += "<br><br>";
 
     // 处理外部链接

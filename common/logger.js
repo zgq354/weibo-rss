@@ -9,10 +9,10 @@ log4js.configure({
       type: 'stdout'
     },
     app: {
-      type: 'file',
-      filename: 'logs/weibo-rss.log',
-      maxLogSize: 20480,
-      backups: 3,
+      type: 'dateFile',
+      filename: 'logs/weibo-rss',
+      "alwaysIncludePattern": true,
+      "pattern": "-yyyy-MM-dd.log"
     }
   },
   categories: {

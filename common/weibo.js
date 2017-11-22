@@ -108,8 +108,8 @@ function getDetials(id) {
                 // 缓存不存在则发出请求
                 axios.get(DETAIL_URL + id).then(function (res) {
                     data = res.data;
-                    // 先去掉换行，再提取json
-                    data = data.replace(/\n/g, '').match(/\$render_data\s\=\s\[(.*?\})\]\[0\]/);
+                    // 提取JSON
+                    data = data.match(/\$render_data\s\=\s\[([\s\S]*?\})\]\[0\]/);
                     data = data ? data[1] : {};
                     // 去除多余空白字符
                     data = JSON.stringify(JSON.parse(data));

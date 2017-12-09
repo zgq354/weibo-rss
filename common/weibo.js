@@ -20,24 +20,26 @@ exports.fetchRSS = function(uid) {
                 value: uid
             }
         }).then(function (res) {
-            if (!res.data.userInfo) {
+            const data = res.data.data || {};
+            if (!data.userInfo) {
                 return reject('User not found');
             }
             // 初始化 feed对象
             feed = new RSS({
-                site_url: PROFILE_URL + res.data.userInfo.id,
-                title: res.data.userInfo.screen_name + '的微博',
-                description: res.data.userInfo.description,
+                site_url: PROFILE_URL + data.userInfo.id,
+                title: data.userInfo.screen_name + '的微博',
+                description: data.userInfo.description,
                 generator: 'https://github.com/zgq354/weibo-rss',
                 ttl: 10
             });
 
             // 获取container id
-            const containerId = res.data.tabsInfo.tabs[1].containerid;
+            const containerId = data.tabsInfo.tabs[1].containerid;
             // 下一步，获取用户最近的微博
             return axios.get(API_URL, {params: { type: 'uid', value: uid, containerid: containerId }});
         }).then(function (res) {
-            const cards = res.data.cards;
+            const data = res.data.data || {};
+            const cards = data.cards;
 
             // 过滤掉多余的card
             var list = cards.filter(function (item) {

@@ -18,7 +18,6 @@ https://api.izgq.net/weibo/
 RSS地址：http://example.com/rss/{微博博主的uid}  
 
 ## 搭建
-十分建议您自己搭建本程序  
 依赖：Node.js >= v6.9.0, Redis  
 参考项目中的 Dockerfile，脚本启动时需要为程序设置 Redis 连接参数的环境变量  
 

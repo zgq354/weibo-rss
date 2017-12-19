@@ -18,6 +18,9 @@ exports.fetchRSS = function(uid) {
             params: {
                 type: 'uid',
                 value: uid
+            },
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1'
             }
         }).then(function (res) {
             const data = res.data.data || {};
@@ -37,7 +40,16 @@ exports.fetchRSS = function(uid) {
             // 获取container id
             const containerId = data.tabsInfo.tabs[1].containerid;
             // 下一步，获取用户最近的微博
-            return axios.get(API_URL, {params: { type: 'uid', value: uid, containerid: containerId }});
+            return axios.get(API_URL, {
+                params: {
+                    type: 'uid',
+                    value: uid,
+                    containerid: containerId
+                },
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1'
+                }
+            });
         }).then(function (res) {
 
             console.log('get Weibo list Successful', uid);
@@ -111,7 +123,11 @@ function getDetials(id) {
                 resolve(result);
             } else {
                 // 缓存不存在则发出请求
-                axios.get(DETAIL_URL + id).then(function (res) {
+                axios.get(DETAIL_URL + id, {
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1'
+                    }
+                }).then(function (res) {
                     data = res.data;
                     // 提取JSON
                     data = data.match(/\$render_data\s\=\s\[([\s\S]*?\})\]\[0\]/);

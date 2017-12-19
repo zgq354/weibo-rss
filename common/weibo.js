@@ -33,11 +33,14 @@ exports.fetchRSS = function(uid) {
                 ttl: 10
             });
 
+            console.log('get User Successful', uid);
             // 获取container id
             const containerId = data.tabsInfo.tabs[1].containerid;
             // 下一步，获取用户最近的微博
             return axios.get(API_URL, {params: { type: 'uid', value: uid, containerid: containerId }});
         }).then(function (res) {
+
+            console.log('get Weibo list Successful', uid);
             const data = res.data.data || {};
             const cards = data.cards;
 

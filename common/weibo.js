@@ -118,8 +118,8 @@ function getDetials(id) {
                     data = data ? data[1] : {};
                     // 去除多余空白字符
                     data = JSON.stringify(JSON.parse(data));
-                    // 设置缓存
-                    cache.set(key, data, 7200);
+                    // 设置7天缓存
+                    cache.set(key, data, 604800);
                     // 别忘了返回数据
                     resolve(data);
                 }).catch(function (err) {

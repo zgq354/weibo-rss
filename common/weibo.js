@@ -14,19 +14,10 @@ exports.fetchRSS = function(uid) {
         var feed; // feed 对象
 
         // 第一步，获取用户的信息
-        axios.get(API_URL, {
-            params: {
-                type: 'uid',
-                value: uid
-            },
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1'
-            }
-        }).then(function (res) {
-            const data = res.data.data || {};
-            if (!data.userInfo) {
-                return reject('User not found');
-            }
+        getUserInfo(uid).then(function (data) {
+            console.log(data);
+            console.log(data.userInfo);
+
             // 初始化 feed对象
             feed = new RSS({
                 site_url: PROFILE_URL + data.userInfo.id,
@@ -38,7 +29,7 @@ exports.fetchRSS = function(uid) {
 
             console.log('get User Successful', uid);
             // 获取container id
-            const containerId = data.tabsInfo.tabs[1].containerid;
+            const containerId = data.containerId;
             // 下一步，获取用户最近的微博
             return axios.get(API_URL, {
                 params: {
@@ -113,6 +104,51 @@ exports.getUIDByDomain = function (domain) {
         });
     });
 };
+
+// 获取用户信息增加缓存
+function getUserInfo(uid) {
+    return new Promise(function(resolve, reject) {
+        var key = `weibo-rss-info-${uid}`;
+        cache.get(key).then(function (result) {
+            if (result) {
+                resolve(JSON.parse(result));
+            } else {
+                axios.get(API_URL, {
+                    params: {
+                        type: 'uid',
+                        value: uid
+                    },
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1'
+                    }
+                }).then(function (res) {
+                    const data = res.data.data || {};
+                    if (!data.userInfo) {
+                        return reject('User not found');
+                    }
+                    // 获取container id
+                    const containerId = data.tabsInfo.tabs[1].containerid;
+                    if (!containerId) {
+                        return reject('containerId not found');
+                    }
+                    var resultObj = {
+                        userInfo: data.userInfo,
+                        containerId: containerId
+                    };
+                    // 去除多余空白字符
+                    dataStr = JSON.stringify(resultObj);
+                    // 设置1天缓存
+                    cache.set(key, dataStr, 86400);
+                    resolve(resultObj);
+                }).catch(function (err) {
+                    reject(err);
+                });
+            }
+        }).catch(function (err) {
+            reject(err);
+        })
+    });
+}
 
 // 自动缓存单条微博详情，减少并发请求数量
 function getDetials(id) {

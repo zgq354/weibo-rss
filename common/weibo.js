@@ -27,7 +27,6 @@ exports.fetchRSS = function(uid) {
                 ttl: 10
             });
 
-            console.log('get User Successful', uid);
             // 获取container id
             const containerId = data.containerId;
             // 下一步，获取用户最近的微博
@@ -42,8 +41,6 @@ exports.fetchRSS = function(uid) {
                 }
             });
         }).then(function (res) {
-
-            console.log('get Weibo list Successful', uid);
             const data = res.data.data || {};
             const cards = data.cards;
 

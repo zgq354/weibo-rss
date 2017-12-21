@@ -15,8 +15,6 @@ exports.fetchRSS = function(uid) {
 
         // 第一步，获取用户的信息
         getUserInfo(uid).then(function (data) {
-            console.log(data);
-            console.log(data.userInfo);
 
             // 初始化 feed对象
             feed = new RSS({

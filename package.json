@@ -8,6 +8,8 @@
   "dependencies": {
     "axios": "^0.16.2",
     "bluebird": "^3.5.0",
+    "cacheman": "^2.2.1",
+    "cacheman-file": "^0.2.1",
     "debug": "~2.6.3",
     "express": "~4.15.2",
     "log4js": "^2.3.4",

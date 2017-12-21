@@ -44,3 +44,5 @@ fabric.properties
 
 /node_modules/
 /logs/weibo-rss*
+
+/data/cache/weibo-rss*

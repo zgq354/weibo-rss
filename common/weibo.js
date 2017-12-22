@@ -4,6 +4,8 @@
 var axios = require('axios');
 var RSS = require('rss');
 var cache = require('./cache');
+var path = require('path');
+var fs = require('fs');
 
 const API_URL = 'https://m.weibo.cn/api/container/getIndex';
 const DETAIL_URL = 'https://m.weibo.cn/status/';
@@ -50,7 +52,7 @@ exports.fetchRSS = function(uid) {
             // 分别抓取每一条微博的具体内容，只有访问每条微博的详情的时候才能获取到完整的全文和时间信息
             var listPromises = [];
             list.forEach(function (item) {
-                listPromises.push(getDetials(item.mblog.id));
+                listPromises.push(getDetials(item.mblog.id, uid));
             });
 
             // 下一步：处理构造好的Promise的并发请求结果
@@ -145,11 +147,41 @@ function getUserInfo(uid) {
     });
 }
 
+// 缓存内容
+function setStorage(uid, statusId, val) {
+  return new Promise(function(resolve, reject) {
+    if (typeof val === 'undefined' || null) return reject(new Error('val not set'));
+
+    var dir = path.join('data', 'status', uid);
+    var filePath = path.join(dir, statusId + '.json');
+    // 创建目录
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+    // 创建文件
+    fs.writeFileSync(filePath, val);
+    resolve();
+  });
+}
+
+// 获取文件缓存内容
+function getStorage(uid, statusId) {
+  return new Promise(function(resolve, reject) {
+    var data = null;
+    var filePath = path.join('data', 'status', uid , statusId + '.json');
+    if (fs.existsSync(filePath)) {
+      data = fs.readFileSync(filePath);
+      data = JSON.parse(data);
+      return resolve(data);
+    } else {
+      return resolve(null);
+    }
+  });
+}
+
 // 自动缓存单条微博详情，减少并发请求数量
-function getDetials(id) {
+function getDetials(id, uid) {
     return new Promise(function (resolve, reject) {
         var key = `weibo-rss-status-${id}`;
-        cache.get(key).then(function (result) {
+        getStorage(uid, id).then(function (result) {
             if (result) {
                 resolve(result);
             } else {
@@ -165,8 +197,8 @@ function getDetials(id) {
                     data = data ? data[1] : {};
                     // 去除多余空白字符
                     data = JSON.stringify(JSON.parse(data));
-                    // 设置7天缓存
-                    cache.set(key, data, 604800);
+                    // 设置缓存
+                    setStorage(uid, id, data);
                     // 别忘了返回数据
                     resolve(data);
                 }).catch(function (err) {

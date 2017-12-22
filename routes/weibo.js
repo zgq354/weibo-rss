@@ -15,7 +15,6 @@ var fileCache = new CachemanFile({
 // 做一个支持 Promise 的获取缓存接口
 function getFileCache(key) {
   return new Promise(function(resolve, reject) {
-    return resolve(null);
     fileCache.get(key, function (err, data) {
       if (err) {
         return reject(err);

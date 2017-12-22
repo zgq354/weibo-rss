@@ -7,6 +7,11 @@ var logger = require('./logger');
 var cache = require('./cache');
 var path = require('path');
 var fs = require('fs');
+var Queue = require('np-queue');
+
+const q = new Queue({
+  concurrency: 3
+});
 
 const API_URL = 'https://m.weibo.cn/api/container/getIndex';
 const DETAIL_URL = 'https://m.weibo.cn/status/';
@@ -31,15 +36,17 @@ exports.fetchRSS = function(uid) {
             // 获取container id
             const containerId = data.containerId;
             // 下一步，获取用户最近的微博
-            return axios.get(API_URL, {
-                params: {
-                    type: 'uid',
-                    value: uid,
-                    containerid: containerId
-                },
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'
-                }
+            return q.add(function () {
+              return axios.get(API_URL, {
+                  params: {
+                      type: 'uid',
+                      value: uid,
+                      containerid: containerId
+                  },
+                  headers: {
+                      'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'
+                  }
+              });
             });
         }).then(function (res) {
             const data = res.data || {};
@@ -111,14 +118,16 @@ function getUserInfo(uid) {
             if (result) {
                 resolve(JSON.parse(result));
             } else {
-                axios.get(API_URL, {
-                    params: {
-                        type: 'uid',
-                        value: uid
-                    },
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'
-                    }
+                q.add(function () {
+                  return axios.get(API_URL, {
+                      params: {
+                          type: 'uid',
+                          value: uid
+                      },
+                      headers: {
+                          'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'
+                      }
+                  });
                 }).then(function (res) {
                     const data = res.data || {};
                     const userInfo = data.userInfo || data.data.userInfo || {};
@@ -188,10 +197,12 @@ function getDetials(id, uid) {
                 resolve(result);
             } else {
                 // 缓存不存在则发出请求
-                axios.get(DETAIL_URL + id, {
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'
-                    }
+                q.add(function () {
+                  return axios.get(DETAIL_URL + id, {
+                      headers: {
+                          'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'
+                      }
+                  });
                 }).then(function (res) {
                     data = res.data;
                     // 提取JSON

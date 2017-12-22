@@ -3,6 +3,7 @@
  */
 var axios = require('axios');
 var RSS = require('rss');
+var logger = require('./logger');
 var cache = require('./cache');
 var path = require('path');
 var fs = require('fs');
@@ -37,19 +38,19 @@ exports.fetchRSS = function(uid) {
                     containerid: containerId
                 },
                 headers: {
-                    'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1'
+                    'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'
                 }
             });
         }).then(function (res) {
-            const data = res.data.data || {};
-            const cards = data.cards;
+            const data = res.data || {};
+            const cards = data.cards || data.data.cards || {};
 
             // 过滤掉多余的card
             var list = cards.filter(function (item) {
                 return item.card_type == 9;
             });
 
-            // 分别抓取每一条微博的具体内容，只有访问每条微博的详情的时候才能获取到完整的全文和时间信息
+            // 获取微博内容
             var listPromises = [];
             list.forEach(function (item) {
                 listPromises.push(getDetials(item.mblog.id, uid));
@@ -86,7 +87,7 @@ exports.getUIDByDomain = function (domain) {
         // 向微博发出请求,利用手机版的跳转获取containerid
         axios.get(PROFILE_URL + domain, {
             headers: {
-                'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1'
+                'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'
             }
         }).then(function (data) {
             // console.log(data.request.path);
@@ -116,20 +117,22 @@ function getUserInfo(uid) {
                         value: uid
                     },
                     headers: {
-                        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1'
+                        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'
                     }
                 }).then(function (res) {
-                    const data = res.data.data || {};
-                    if (!data.userInfo) {
+                    const data = res.data || {};
+                    const userInfo = data.userInfo || data.data.userInfo || {};
+                    const tabsInfo = data.tabsInfo || data.data.tabsInfo || {};
+                    if (!userInfo) {
                         return reject('User not found');
                     }
                     // 获取container id
-                    const containerId = data.tabsInfo.tabs[1].containerid;
+                    const containerId = tabsInfo.tabs[1].containerid;
                     if (!containerId) {
                         return reject('containerId not found');
                     }
                     var resultObj = {
-                        userInfo: data.userInfo,
+                        userInfo: userInfo,
                         containerId: containerId
                     };
                     // 去除多余空白字符
@@ -149,6 +152,7 @@ function getUserInfo(uid) {
 
 // 缓存内容
 function setStorage(uid, statusId, val) {
+  logger.info('set cache: ' + uid + ' ' + statusId);
   return new Promise(function(resolve, reject) {
     if (typeof val === 'undefined' || null) return reject(new Error('val not set'));
 
@@ -168,7 +172,7 @@ function getStorage(uid, statusId) {
     var data = null;
     var filePath = path.join('data', 'status', uid , statusId + '.json');
     if (fs.existsSync(filePath)) {
-      data = fs.readFileSync(filePath);
+      data = fs.readFileSync(filePath, 'utf8');
       return resolve(data);
     } else {
       return resolve(null);
@@ -179,7 +183,6 @@ function getStorage(uid, statusId) {
 // 自动缓存单条微博详情，减少并发请求数量
 function getDetials(id, uid) {
     return new Promise(function (resolve, reject) {
-        var key = `weibo-rss-status-${id}`;
         getStorage(uid, id).then(function (result) {
             if (result) {
                 resolve(result);
@@ -187,7 +190,7 @@ function getDetials(id, uid) {
                 // 缓存不存在则发出请求
                 axios.get(DETAIL_URL + id, {
                     headers: {
-                        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1'
+                        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'
                     }
                 }).then(function (res) {
                     data = res.data;

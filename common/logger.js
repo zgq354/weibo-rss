@@ -1,6 +1,6 @@
 /**
- * Created by qing on 17-10-2.
- */
+* Created by qing on 17-10-2.
+*/
 var log4js = require('log4js');
 
 log4js.configure({

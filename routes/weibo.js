@@ -1,6 +1,6 @@
 /**
- * Created by qing on 17-9-30.
- */
+* Created by qing on 17-9-30.
+*/
 var express = require('express');
 var weibo = require('../common/weibo');
 var logger = require('../common/logger');
@@ -32,9 +32,9 @@ router.get('/:id', function(req, res, next) {
   var uid = req.params['id'];
   // 获取 IP地址
   var ip = req.headers['x-forwarded-for'] ||
-    req.connection.remoteAddress ||
-    req.socket.remoteAddress ||
-    req.connection.socket.remoteAddress;
+  req.connection.remoteAddress ||
+  req.socket.remoteAddress ||
+  req.connection.socket.remoteAddress;
 
   // 验证参数格式
   if (!/^[0-9]*$/.test(uid)) {
@@ -54,17 +54,17 @@ router.get('/:id', function(req, res, next) {
     } else {
       // 缓存不存在时候就直接抓取
       weibo.fetchRSS(uid)
-        .then(function (data) {
-          // 存入缓存
-          fileCache.set(key, data, 900);
-          // 发送结果
-          res.header('Content-Type', 'text/xml');
-          res.send(data);
-        })
-        .catch(function (err) {
-          logger.error(`${err} - uid: ${uid} - IP: ${ip}`);
-          next();
-        });
+      .then(function (data) {
+        // 存入缓存
+        fileCache.set(key, data, 900);
+        // 发送结果
+        res.header('Content-Type', 'text/xml');
+        res.send(data);
+      })
+      .catch(function (err) {
+        logger.error(`${err} - uid: ${uid} - IP: ${ip}`);
+        next();
+      });
     }
   }).catch(function (err) {
     logger.error(`Redis error ${err} - uid: ${uid} - IP: ${ip}`);

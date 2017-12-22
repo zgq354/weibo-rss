@@ -169,7 +169,6 @@ function getStorage(uid, statusId) {
     var filePath = path.join('data', 'status', uid , statusId + '.json');
     if (fs.existsSync(filePath)) {
       data = fs.readFileSync(filePath);
-      data = JSON.parse(data);
       return resolve(data);
     } else {
       return resolve(null);

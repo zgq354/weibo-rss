@@ -101,8 +101,9 @@ exports.getUIDByDomain = function (domain) {
       const containerId = data.request.path.split("/p/")[1];
       // 下一步：通过containerid获取uid
       return axios.get(API_URL, {params: { containerid: containerId }});
-    }).then(function (data) {
-      const uid = data.data.userInfo.id;
+    }).then(function (res) {
+      const data = res.data.ok ? res.data.data : res.data;
+      const uid = data.userInfo.id;
       resolve(uid);
     }).catch(function (err) {
       reject(err);

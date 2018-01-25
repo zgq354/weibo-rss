@@ -15,6 +15,7 @@ const q = new Queue({
 
 const API_URL = 'https://m.weibo.cn/api/container/getIndex';
 const DETAIL_URL = 'https://m.weibo.cn/status/';
+const DETAIL_API_URL = 'https://m.weibo.cn/statuses/show?id=';
 const PROFILE_URL = 'https://weibo.com/';
 
 exports.fetchRSS = function(uid) {
@@ -67,15 +68,13 @@ exports.fetchRSS = function(uid) {
       return Promise.all(listPromises);
     }).then(function (resArr) {
       resArr.forEach(function (data) {
-        // 解析json
-        data = JSON.parse(data);
         // 构造feed中的item
         feed.item({
-          title: data.status.status_title,
-          description: formatStatus(data.status),
-          url: DETAIL_URL + data.status.id,
-          guid: DETAIL_URL + data.status.id,
-          date: new Date(data.status.created_at)
+          title: data.status_title,
+          description: formatStatus(data),
+          url: DETAIL_URL + data.id,
+          guid: DETAIL_URL + data.id,
+          date: new Date(data.created_at)
         });
       });
 
@@ -171,7 +170,7 @@ function setStorage(uid, statusId, val) {
     // 创建目录
     if (!fs.existsSync(dir)) fs.mkdirSync(dir);
     // 创建文件
-    fs.writeFileSync(filePath, val);
+    fs.writeFileSync(filePath, JSON.stringify(val));
     resolve();
   });
 }
@@ -183,6 +182,7 @@ function getStorage(uid, statusId) {
     var filePath = path.join('data', 'status', uid , statusId + '.json');
     if (fs.existsSync(filePath)) {
       data = fs.readFileSync(filePath, 'utf8');
+      data = JSON.parse(data);
       return resolve(data);
     } else {
       return resolve(null);
@@ -199,18 +199,15 @@ function getDetials(id, uid) {
       } else {
         // 缓存不存在则发出请求
         q.add(function () {
-          return axios.get(DETAIL_URL + id, {
+          return axios.get(DETAIL_API_URL + id, {
             headers: {
               'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'
             }
           });
         }).then(function (res) {
           data = res.data;
-          // 提取JSON
-          data = data.match(/\$render_data\s\=\s\[([\s\S]*?\})\]\[0\]/);
-          data = data ? data[1] : {};
-          // 去除多余空白字符
-          data = JSON.stringify(JSON.parse(data));
+          // 获取微博数据
+          data = data.data;
           // 设置缓存
           setStorage(uid, id, data);
           // 别忘了返回数据

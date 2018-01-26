@@ -6,24 +6,6 @@ var weibo = require('../common/weibo');
 var logger = require('../common/logger');
 var cache = require('../common/cache');
 
-// 临时引入一个文件缓存，之后再考虑重构
-var CachemanFile = require('cacheman-file');
-var fileCache = new CachemanFile({
-  tmpDir: 'data/cache'
-});
-
-// 做一个支持 Promise 的获取缓存接口
-function getFileCache(key) {
-  return new Promise(function(resolve, reject) {
-    fileCache.get(key, function (err, data) {
-      if (err) {
-        return reject(err);
-      }
-      return resolve(data);
-    })
-  });
-}
-
 var router = express.Router();
 
 /* GET weibo rss. */
@@ -44,9 +26,9 @@ router.get('/:id', function(req, res, next) {
 
   logger.info(`get weibo of uid: ${uid} - IP: ${ip}`);
 
-  var key = `weibo-rss-${uid}`;
+  var key = `weibo-rss-total-${uid}`;
   // 读取缓存
-  getFileCache(key).then(function (result) {
+  cache.get(key).then(function (result) {
     if (result) {
       // 发送结果
       res.header('Content-Type', 'text/xml');
@@ -56,7 +38,7 @@ router.get('/:id', function(req, res, next) {
       weibo.fetchRSS(uid)
       .then(function (data) {
         // 存入缓存
-        fileCache.set(key, data, 900);
+        cache.set(key, data, 900);
         // 发送结果
         res.header('Content-Type', 'text/xml');
         res.send(data);
@@ -67,7 +49,7 @@ router.get('/:id', function(req, res, next) {
       });
     }
   }).catch(function (err) {
-    logger.error(`Redis error ${err} - uid: ${uid} - IP: ${ip}`);
+    logger.error(`Cache error ${err} - uid: ${uid} - IP: ${ip}`);
     next(err);
   });
 });

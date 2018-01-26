@@ -45,8 +45,5 @@ fabric.properties
 /node_modules/
 /logs/weibo-rss*
 
-/data/cache/*
-!/data/cache/.gitkeep
-
-/data/status/*
-!/data/status/.gitkeep
+/data/*
+!/data/.gitkeep

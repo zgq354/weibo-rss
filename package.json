@@ -7,16 +7,13 @@
   },
   "dependencies": {
     "axios": "^0.16.2",
-    "bluebird": "^3.5.0",
-    "cacheman": "^2.2.1",
-    "cacheman-file": "^0.2.1",
     "debug": "~2.6.3",
     "express": "~4.15.2",
+    "level": "^2.1.1",
     "log4js": "^2.3.4",
     "morgan": "~1.8.1",
     "np-queue": "^1.0.0",
     "path": "^0.12.7",
-    "redis": "^2.8.0",
     "rss": "^1.2.2"
   }
 }

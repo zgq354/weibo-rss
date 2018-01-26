@@ -5,8 +5,6 @@ var axios = require('axios');
 var RSS = require('rss');
 var logger = require('./logger');
 var cache = require('./cache');
-var path = require('path');
-var fs = require('fs');
 var Queue = require('np-queue');
 
 const q = new Queue({
@@ -31,7 +29,7 @@ exports.fetchRSS = function(uid) {
         title: data.userInfo.screen_name + '的微博',
         description: data.userInfo.description,
         generator: 'https://github.com/zgq354/weibo-rss',
-        ttl: 10
+        ttl: 15
       });
 
       // 获取container id
@@ -110,7 +108,8 @@ exports.getUIDByDomain = function (domain) {
   });
 };
 
-// 获取用户信息增加缓存
+// 获取用户信息
+// 缓存时间24小时
 function getUserInfo(uid) {
   return new Promise(function(resolve, reject) {
     var key = `weibo-rss-info-${uid}`;
@@ -159,41 +158,11 @@ function getUserInfo(uid) {
   });
 }
 
-// 缓存内容
-function setStorage(uid, statusId, val) {
-  logger.info('set cache: ' + uid + ' ' + statusId);
-  return new Promise(function(resolve, reject) {
-    if (typeof val === 'undefined' || null) return reject(new Error('val not set'));
-
-    var dir = path.join('data', 'status', uid);
-    var filePath = path.join(dir, statusId + '.json');
-    // 创建目录
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir);
-    // 创建文件
-    fs.writeFileSync(filePath, JSON.stringify(val));
-    resolve();
-  });
-}
-
-// 获取文件缓存内容
-function getStorage(uid, statusId) {
-  return new Promise(function(resolve, reject) {
-    var data = null;
-    var filePath = path.join('data', 'status', uid , statusId + '.json');
-    if (fs.existsSync(filePath)) {
-      data = fs.readFileSync(filePath, 'utf8');
-      data = JSON.parse(data);
-      return resolve(data);
-    } else {
-      return resolve(null);
-    }
-  });
-}
-
 // 自动缓存单条微博详情，减少并发请求数量
 function getDetials(id, uid) {
   return new Promise(function (resolve, reject) {
-    getStorage(uid, id).then(function (result) {
+    var key = `weibo-rss-details-${uid}-${id}`;
+    cache.get(key).then(function (result) {
       if (result) {
         resolve(result);
       } else {
@@ -209,7 +178,7 @@ function getDetials(id, uid) {
           // 获取微博数据
           data = data.data;
           // 设置缓存
-          setStorage(uid, id, data);
+          cache.set(key, data);
           // 别忘了返回数据
           resolve(data);
         }).catch(function (err) {

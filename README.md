@@ -18,7 +18,7 @@ RSS地址：http://example.com/rss/{微博博主的uid}
 
 ## 搭建
 环境：Node.js >= v6.9.0  
-参考项目中的 Dockerfile  
+参考[项目Wiki](https://github.com/zgq354/weibo-rss/wiki)  
 
 ## License
 MIT

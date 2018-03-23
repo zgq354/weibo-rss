@@ -66,6 +66,11 @@ exports.fetchRSS = function(uid) {
       return Promise.all(listPromises);
     }).then(function (resArr) {
       resArr.forEach(function (data) {
+        // 解决因为用户某些微博被屏蔽站外访问而导致整个 RSS 返回 Not Found 的问题
+        // 具体表现：直接打开该微博链接，提示“微博部分内容不支持站外查看，请使用官方客户端获取内容。”
+        // 也是很无奈呢，面对这越来越封闭的互联网
+        if (!data) return;
+
         // 构造feed中的item
         feed.item({
           title: data.status_title,

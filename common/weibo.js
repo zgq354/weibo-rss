@@ -11,6 +11,7 @@ const q = new Queue({
   concurrency: 3
 });
 
+const WIDGET_URL = 'http://service.weibo.com/widget/widget_blog.php';
 const API_URL = 'https://m.weibo.cn/api/container/getIndex';
 const DETAIL_URL = 'https://m.weibo.cn/status/';
 const DETAIL_API_URL = 'https://m.weibo.cn/statuses/show?id=';
@@ -35,40 +36,18 @@ exports.fetchRSS = function(uid) {
       // 获取container id
       const containerId = data.containerId;
       // 下一步，获取用户最近的微博
-      return q.add(function () {
-        return axios.get(API_URL, {
-          params: {
-            type: 'uid',
-            value: uid,
-            containerid: containerId
-          },
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'
-          }
-        });
-      });
-    }).then(function (res) {
-      const data = res.data || {};
-      const cards = data.cards || data.data.cards || {};
-
-      // 过滤掉多余的card
-      var list = cards.filter(function (item) {
-        return item.card_type == 9;
-      });
-
+      return getIdList(uid, containerId);
+    }).then(function (list) {
       // 获取微博内容
       var listPromises = [];
-      list.forEach(function (item) {
-        listPromises.push(getDetials(item.mblog.id, uid));
+      list.forEach(function (id) {
+        listPromises.push(getDetials(id, uid));
       });
 
       // 下一步：处理构造好的Promise的并发请求结果
       return Promise.all(listPromises);
     }).then(function (resArr) {
       resArr.forEach(function (data) {
-        // 解决因为用户某些微博被屏蔽站外访问而导致整个 RSS 返回 Not Found 的问题
-        // 具体表现：直接打开该微博链接，提示“微博部分内容不支持站外查看，请使用官方客户端获取内容。”
-        // 也是很无奈呢，面对这越来越封闭的互联网
         if (!data) return;
 
         // 构造feed中的item
@@ -120,47 +99,153 @@ function getUserInfo(uid) {
     var key = `weibo-rss-info-${uid}`;
     cache.get(key).then(function (result) {
       if (result) {
-        resolve(JSON.parse(result));
+        return Promise.resolve(JSON.parse(result), true);
       } else {
-        q.add(function () {
-          return axios.get(API_URL, {
-            params: {
-              type: 'uid',
-              value: uid
-            },
-            headers: {
-              'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'
-            }
-          });
-        }).then(function (res) {
-          const data = res.data || {};
-          const userInfo = data.userInfo || data.data.userInfo || {};
-          const tabsInfo = data.tabsInfo || data.data.tabsInfo || {};
-          if (!userInfo) {
-            return reject('User not found');
+        return getUserInfoByMobile(uid).then(function (resultObj) {
+          if (resultObj) {
+            return Promise.resolve(resultObj);
+          } else {
+            return getUserInfoByWidget(uid);
           }
-          // 获取container id
-          const containerId = tabsInfo.tabs[1].containerid;
-          if (!containerId) {
-            return reject('containerId not found');
-          }
-          var resultObj = {
-            userInfo: userInfo,
-            containerId: containerId
-          };
-          // 去除多余空白字符
-          dataStr = JSON.stringify(resultObj);
-          // 设置1天缓存
-          cache.set(key, dataStr, 86400);
-          resolve(resultObj);
-        }).catch(function (err) {
-          reject(err);
         });
       }
+    }).then(function (resultObj, isCache) {
+      if (!isCache) {
+        dataStr = JSON.stringify(resultObj);
+        // 设置1天缓存
+        cache.set(key, dataStr, 86400);
+      }
+      resolve(resultObj);
     }).catch(function (err) {
       reject(err);
     })
   });
+}
+
+// HTML5
+function getUserInfoByMobile(uid) {
+  return new Promise(function (resolve, reject) {
+    q.add(function () {
+      return axios.get(API_URL, {
+        params: {
+          type: 'uid',
+          value: uid
+        },
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'
+        }
+      });
+    }).then(function (res) {
+      const data = res.data || {};
+      if (typeof data !== 'object') return resolve(false);
+      const userInfo = data.userInfo || data.data.userInfo || {};
+      const tabsInfo = data.tabsInfo || data.data.tabsInfo || {};
+      if (!userInfo) {
+        return resolve(false);
+      }
+      // 获取container id
+      const containerId = tabsInfo.tabs[1].containerid;
+      if (!containerId) {
+        return resolve(false);
+      }
+      var resultObj = {
+        userInfo: userInfo,
+        containerId: containerId
+      };
+      resolve(resultObj);
+    }).catch(function (err) {
+      reject(err);
+    });
+  });
+}
+
+// Widget
+function getUserInfoByWidget(uid) {
+  logger.info(`get user by widget uid: ${uid}`);
+  return getListByWidget(uid).then(function (list) {
+    var id = list.pop();
+    return getDetials(id, uid);
+  }).then(function (detail) {
+    return Promise.resolve({
+      userInfo: detail.user
+    });
+  });
+}
+
+// 获取列表
+function getIdList(uid, containerId) {
+  return new Promise(function (resolve, reject) {
+    var promise;
+    if (containerId) {
+      promise = getListByMobile(uid, containerId);
+    } else {
+      promise = getListByWidget(uid);
+    }
+    promise.then(function (list) {
+      resolve(list);
+    }).catch(function (err) {
+      reject(err);
+    })
+  })
+}
+
+// HTML5
+function getListByMobile(uid, containerId) {
+  return q.add(function () {
+    return new Promise(function (resolve, reject) {
+      q.add(function () {
+        return axios.get(API_URL, {
+          params: {
+            type: 'uid',
+            value: uid,
+            containerid: containerId
+          },
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'
+          }
+        });
+      }).then(function (res) {
+        const data = res.data || {};
+        const cards = data.cards || data.data.cards || {};
+
+        // 过滤掉多余的card
+        var list = cards.filter(function (item) {
+          return item.card_type == 9;
+        });
+        // 结果列表
+        var result = [];
+        list.forEach(function (item) {
+          result.push(item.mblog.id);
+        });
+        resolve(result);
+      }).catch(function (err) {
+        reject(err);
+      });
+    });
+  });
+}
+
+// Widget
+function getListByWidget(uid) {
+  return q.add(function () {
+      return axios.get(WIDGET_URL, {
+        params: {
+          uid: uid
+        },
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36'
+        }
+      });
+    }).then(function (res) {
+      const data = res.data;
+      var linkArr = data.match(/<a href="http:\/\/weibo\.com\/\d+?\/(.*)?" title="" target="_blank" class="link_d">/g);
+      // 结果列表
+      var result = [];
+      linkArr.forEach(function (v) {
+        result.push(v.match(/<a href="http:\/\/weibo\.com\/\d+?\/(.*)?" title="" target="_blank" class="link_d">/)[1]);
+      });
+      return Promise.resolve(result);
+    });
 }
 
 // 自动缓存单条微博详情，减少并发请求数量

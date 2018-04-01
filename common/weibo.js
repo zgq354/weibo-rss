@@ -8,6 +8,10 @@ var cache = require('./cache');
 var Queue = require('np-queue');
 
 const q = new Queue({
+  concurrency: 2
+});
+
+const q2 = new Queue({
   concurrency: 3
 });
 
@@ -191,36 +195,34 @@ function getIdList(uid, containerId) {
 
 // HTML5
 function getListByMobile(uid, containerId) {
-  return q.add(function () {
-    return new Promise(function (resolve, reject) {
-      q.add(function () {
-        return axios.get(API_URL, {
-          params: {
-            type: 'uid',
-            value: uid,
-            containerid: containerId
-          },
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'
-          }
-        });
-      }).then(function (res) {
-        const data = res.data || {};
-        const cards = data.cards || data.data.cards || {};
-
-        // 过滤掉多余的card
-        var list = cards.filter(function (item) {
-          return item.card_type == 9;
-        });
-        // 结果列表
-        var result = [];
-        list.forEach(function (item) {
-          result.push(item.mblog.id);
-        });
-        resolve(result);
-      }).catch(function (err) {
-        reject(err);
+  return new Promise(function (resolve, reject) {
+    q.add(function () {
+      return axios.get(API_URL, {
+        params: {
+          type: 'uid',
+          value: uid,
+          containerid: containerId
+        },
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'
+        }
       });
+    }).then(function (res) {
+      const data = res.data || {};
+      const cards = data.cards || data.data.cards || {};
+
+      // 过滤掉多余的card
+      var list = cards.filter(function (item) {
+        return item.card_type == 9;
+      });
+      // 结果列表
+      var result = [];
+      list.forEach(function (item) {
+        result.push(item.mblog.id);
+      });
+      resolve(result);
+    }).catch(function (err) {
+      reject(err);
     });
   });
 }
@@ -244,6 +246,8 @@ function getListByWidget(uid) {
       linkArr.forEach(function (v) {
         result.push(v.match(/<a href="http:\/\/weibo\.com\/\d+?\/(.*)?" title="" target="_blank" class="link_d">/)[1]);
       });
+      // 截取前十条
+      result = result.slice(0, 10);
       return Promise.resolve(result);
     });
 }
@@ -257,7 +261,7 @@ function getDetials(id, uid) {
         resolve(result);
       } else {
         // 缓存不存在则发出请求
-        q.add(function () {
+        q2.add(function () {
           return axios.get(DETAIL_API_URL + id, {
             headers: {
               'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'

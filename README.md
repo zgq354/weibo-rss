@@ -1,5 +1,5 @@
 # weibo-rss
-把某人的微博转换成 RSS Feed，支持长微博，表情，图片，链接的输出
+把某人的微博转换成 RSS Feed，支持长微博，图片，链接的输出
 
 ## 介绍
 Demo: https://api.izgq.net/weibo/

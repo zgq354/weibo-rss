@@ -26,30 +26,28 @@ router.get('/:id', function(req, res, next) {
 
   logger.info(`get weibo of uid: ${uid} - IP: ${ip}`);
 
-  var key = `weibo-rss-total-${uid}`;
   // 读取缓存
+  var key = `weibo-rss-total-${uid}`;
   cache.get(key).then(function (result) {
     if (result) {
-      // 发送结果
-      res.header('Content-Type', 'text/xml');
-      res.send(result);
+      return Promise.resolve(result);
     } else {
-      // 缓存不存在时候就直接抓取
-      weibo.fetchRSS(uid)
-      .then(function (data) {
+      // 抓取
+      return weibo.fetchRSS(uid).then(function (data) {
         // 存入缓存
         cache.set(key, data, 900);
-        // 发送结果
-        res.header('Content-Type', 'text/xml');
-        res.send(data);
-      })
-      .catch(function (err) {
-        logger.error(`${err} - uid: ${uid} - IP: ${ip}`);
-        next();
+        return Promise.resolve(data);
+      }).catch(function (err) {
+        logger.error(`Error - ${err} - uid: ${uid} - IP: ${ip}`);
+        return Promise.reject();
       });
     }
+  }).then(function (data) {
+    // 发送结果
+    res.header('Content-Type', 'text/xml');
+    res.send(data);
   }).catch(function (err) {
-    logger.error(`Cache error ${err} - uid: ${uid} - IP: ${ip}`);
+    if (err) logger.error(`Cache error - ${err} - uid: ${uid} - IP: ${ip}`);
     next(err);
   });
 });

@@ -127,9 +127,9 @@ function getUserInfoByMobile(uid) {
     }).then(function (res) {
       const data = res.data || {};
       if (typeof data !== 'object') return Promise.resolve(false);
-      const userInfo = data.userInfo || data.data.userInfo || {};
-      const tabsInfo = data.tabsInfo || data.data.tabsInfo || {};
-      if (!userInfo) {
+      const userInfo = data.userInfo || data.data.userInfo || false;
+      const tabsInfo = data.tabsInfo || data.data.tabsInfo || false;
+      if (!userInfo || !tabsInfo) {
         return Promise.resolve(false);
       }
       // 获取container id

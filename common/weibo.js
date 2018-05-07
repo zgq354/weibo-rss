@@ -7,12 +7,14 @@ var logger = require('./logger');
 var cache = require('./cache');
 var Queue = require('np-queue');
 
-const q = new Queue({
+// 限制基本信息的并发
+const infoQueue = new Queue({
   concurrency: 2
 });
 
-const q2 = new Queue({
-  concurrency: 3
+// 限制内容请求的并发...不能再低了/(ㄒoㄒ)/~~
+const contentQueue = new Queue({
+  concurrency: 1
 });
 
 const WIDGET_URL = 'http://service.weibo.com/widget/widget_blog.php';
@@ -113,7 +115,7 @@ function getUserInfo(uid) {
 
 // HTML5
 function getUserInfoByMobile(uid) {
-  return q.add(function () {
+  return infoQueue.add(function () {
     return axios.get(API_URL, {
       params: {
         type: 'uid',
@@ -168,7 +170,7 @@ function getIdList(uid, containerId) {
 
 // HTML5
 function getListByMobile(uid, containerId) {
-  return q.add(function () {
+  return infoQueue.add(function () {
     return axios.get(API_URL, {
       params: {
         type: 'uid',
@@ -198,7 +200,7 @@ function getListByMobile(uid, containerId) {
 
 // Widget
 function getListByWidget(uid) {
-  return q.add(function () {
+  return infoQueue.add(function () {
     return axios.get(WIDGET_URL, {
       params: {
         uid: uid
@@ -230,7 +232,7 @@ function getDetials(id, uid) {
       return Promise.resolve(result);
     } else {
       // 缓存不存在则发出请求
-      return q2.add(function () {
+      return contentQueue.add(function () {
         return axios.get(DETAIL_API_URL + id, {
           headers: {
             'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'

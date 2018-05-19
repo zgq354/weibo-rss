@@ -255,6 +255,8 @@ function getDetials(id, uid) {
 function formatStatus(status) {
   // 长文章的处理
   var temp = status.longText ? status.longText.longTextContent.replace(/\n/g, '<br>') : status.text;
+  // 某些纯图片微博 status.text 的值为 null
+  if (!temp) temp = "";
   // 表情图标转换为文字
   temp = temp.replace(/<span class="url-icon"><img src=".*?" style="width:1em;height:1em;" alt="(.*?)"><\/span>/g, '$1');
   // 去掉外部链接的图标

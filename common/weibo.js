@@ -76,13 +76,7 @@ exports.getUIDByDomain = function (domain) {
       'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'
     }
   }).then(function (data) {
-    // console.log(data.request.path);
-    const containerId = data.request.path.split("/p/")[1];
-    // 下一步：通过containerid获取uid
-    return axios.get(API_URL, {params: { containerid: containerId }});
-  }).then(function (res) {
-    const data = res.data.ok ? res.data.data : res.data;
-    const uid = data.userInfo.id;
+    const uid = data.request.path.split("/u/")[1];
     return Promise.resolve(uid);
   });
 };

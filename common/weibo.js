@@ -252,11 +252,10 @@ function formatStatus(status) {
   // 某些纯图片微博 status.text 的值为 null
   if (!temp) temp = "";
   // 表情图标转换为文字
-  temp = temp.replace(/<span class="url-icon"><img src=".*?" style="width:1em;height:1em;" alt="(.*?)"><\/span>/g, '$1');
+  temp = temp.replace(/<span class="url-icon"><img alt="(.*?)" src=".*?" style="width:1em; height:1em;"\/><\/span>/g, '$1');
   // 去掉外部链接的图标
-  temp = temp.replace(/<span class="url-icon"><img src=".*?"><\/span>/g, '');
-  // 去掉多余无意义的标签
-  temp = temp.replace(/<span class="surl-text">/g, '');
+  temp = temp.replace(/<span class='url-icon'><img.*?><\/span>/g, '');
+
   // 最后插入两个空行，让转发的微博排版更加美观一些
   temp += "<br><br>";
 

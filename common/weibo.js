@@ -256,9 +256,6 @@ function formatStatus(status) {
   // 去掉外部链接的图标
   temp = temp.replace(/<span class='url-icon'><img.*?><\/span>/g, '');
 
-  // 最后插入两个空行，让转发的微博排版更加美观一些
-  temp += "<br><br>";
-
   // 处理外部链接
   temp = temp.replace(/https:\/\/weibo\.cn\/sinaurl\/.*?&u=(http.*?\")/g, function (match, p1) {
     return decodeURIComponent(p1);
@@ -266,20 +263,24 @@ function formatStatus(status) {
 
   // 处理转发的微博
   if (status.retweeted_status) {
-    // console.log(status.retweeted_status);
+    // 先加入两个空行
+    temp += "<br><br>";
     // 当转发的微博被删除时user为null
     if (status.retweeted_status.user)
-    temp += '<div style="border-left:3px solid green;padding-left:1em;">转发 <a href="' + PROFILE_URL + status.retweeted_status.user.id + '" target="_blank">@' +
-    status.retweeted_status.user.screen_name +
-    '</a>: ';
+    temp += '<div style="border-left: 3px solid gray; padding-left: 1em;">'
+          + '转发 <a href="' + PROFILE_URL + status.retweeted_status.user.id + '" target="_blank">@' + status.retweeted_status.user.screen_name + '</a>: ';
     // 插入转发的微博
-    temp += formatStatus(status.retweeted_status)+'</div>';
+    temp += formatStatus(status.retweeted_status);
+    temp += '</div>';
   }
 
   // 添加微博配图
   if (status.pics) {
     status.pics.forEach(function (item) {
-      temp += '<img src="' + item.large.url + '"><br><br>';
+      // 先加入两个空行
+      temp += "<br><br>";
+      // 默认显示小图，点击链接打开大图
+      temp += '<a href="' + item.large.url + '" target="_blank"><img src="' + item.url + '"></a>';
     });
   }
   return temp;

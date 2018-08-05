@@ -45,7 +45,9 @@ module.exports.get = function (key) {
       // 检查过期
       if (data.expire && Date.now() - data.created > data.expire * 1000) {
         db.del(key, function (error) {
-          logger.error(key + ' ' + error);
+          if (error) {
+            logger.error(key + ' ' + error);
+          }
         });
         resolve();
       } else {

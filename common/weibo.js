@@ -27,17 +27,26 @@ const DETAIL_URL = 'https://m.weibo.cn/status/';
 const DETAIL_API_URL = 'https://m.weibo.cn/statuses/show?id=';
 const PROFILE_URL = 'https://weibo.com/';
 
-exports.fetchRSS = function(uid) {
-  var feed; // feed 对象
+exports.fetchRSS = function(uid, options) {
+  // 大图显示
+  if (options.largePic === undefined) {
+    options.largePic = true;
+  }
+  // TTL
+  if (options.ttl === undefined) {
+    options.ttl = 15;
+  }
+
+  var feed; // NodeRSS 对象
   // 第一步，获取用户的信息
   return getUserInfo(uid).then(function (data) {
-    // 初始化 feed对象
+    // 初始化 NodeRSS
     feed = new RSS({
       site_url: PROFILE_URL + data.userInfo.id,
       title: data.userInfo.screen_name + '的微博',
       description: data.userInfo.description,
       generator: 'https://github.com/zgq354/weibo-rss',
-      ttl: 15
+      ttl: options.ttl
     });
 
     // 获取container id
@@ -60,7 +69,7 @@ exports.fetchRSS = function(uid) {
       // 构造feed中的item
       feed.item({
         title: data.status_title,
-        description: formatStatus(data),
+        description: formatStatus(data, options.largePic),
         url: DETAIL_URL + data.id,
         guid: DETAIL_URL + data.id,
         date: new Date(data.created_at)
@@ -85,8 +94,7 @@ exports.getUIDByDomain = function (domain) {
   });
 };
 
-// 获取用户信息
-// 缓存时间24小时
+// 获取用户 Profile
 function getUserInfo(uid) {
   var key = `weibo-rss-info-${uid}`;
   return cache.get(key).then(function (result) {
@@ -250,7 +258,7 @@ function getDetials(id, uid) {
 }
 
 // 格式化每条微博的HTML
-function formatStatus(status) {
+function formatStatus(status, largePic = true) {
   // 长文章的处理
   var temp = status.longText ? status.longText.longTextContent.replace(/\n/g, '<br>') : status.text;
   // 某些纯图片微博 status.text 的值为 null
@@ -274,7 +282,7 @@ function formatStatus(status) {
     temp += '<div style="border-left: 3px solid gray; padding-left: 1em;">'
           + '转发 <a href="' + PROFILE_URL + status.retweeted_status.user.id + '" target="_blank">@' + status.retweeted_status.user.screen_name + '</a>: ';
     // 插入转发的微博
-    temp += formatStatus(status.retweeted_status);
+    temp += formatStatus(status.retweeted_status, largePic);
     temp += '</div>';
   }
 
@@ -283,8 +291,8 @@ function formatStatus(status) {
     status.pics.forEach(function (item) {
       // 先加入两个空行
       temp += "<br><br>";
-      // 默认显示小图，点击链接打开大图
-      temp += '<a href="' + item.large.url + '" target="_blank"><img src="' + item.url + '"></a>';
+      // 点击链接打开图片
+      temp += '<a href="' + item.large.url + '" target="_blank"><img src="' + (largePic ? item.large.url : item.url) + '"></a>';
     });
   }
   return temp;

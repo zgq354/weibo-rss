@@ -7,6 +7,10 @@ var logger = require('./logger');
 var cache = require('./cache');
 var Queue = require('np-queue');
 
+// 缓存过期清除时间设置
+const infoExpire = 24 * 3600;
+const contentExpire = 7 * 24 * 3600;
+
 // 限制基本信息的并发
 const infoQueue = new Queue({
   concurrency: 2
@@ -100,8 +104,8 @@ function getUserInfo(uid) {
   }).then(function (resultObj, isCache) {
     if (!isCache) {
       dataStr = JSON.stringify(resultObj);
-      // 设置1天缓存
-      cache.set(key, dataStr, 86400);
+      // 设置缓存
+      cache.set(key, dataStr, infoExpire);
     }
     return Promise.resolve(resultObj);
   });
@@ -236,7 +240,7 @@ function getDetials(id, uid) {
           // 获取微博数据
           data = data.data;
           // 设置缓存
-          cache.set(key, data);
+          cache.set(key, data, contentExpire);
           // 别忘了返回数据
           return Promise.resolve(data);
         });

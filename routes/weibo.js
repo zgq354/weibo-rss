@@ -38,7 +38,7 @@ router.get('/:id', function(req, res, next) {
   logger.info(`get weibo of uid: ${uid} - IP: ${ip}`);
 
   // 读取缓存
-  var key = `weibo-rss-total-${uid}${largePic ? '' : '-small'}`;
+  var key = `total-${uid}${largePic ? '' : '-small'}`;
   cache.get(key).then(function (result) {
     if (result) {
       return Promise.resolve(result);
@@ -49,7 +49,7 @@ router.get('/:id', function(req, res, next) {
         cache.set(key, data, TTL * 60);
         return Promise.resolve(data);
       }).catch(function (err) {
-        logger.error(`Error - ${err} - uid: ${uid} - IP: ${ip}`);
+        logger.error(`${err} - uid: ${uid} - IP: ${ip}`);
         return Promise.reject();
       });
     }

@@ -7,8 +7,7 @@ var logger = require('./logger');
 var cache = require('./cache');
 var Queue = require('np-queue');
 
-// 缓存过期清除时间设置
-const infoExpire = 24 * 3600;
+// 缓存过期时间
 const contentExpire = 7 * 24 * 3600;
 
 // 限制基本信息的并发
@@ -21,13 +20,8 @@ const contentQueue = new Queue({
   concurrency: 1
 });
 
-const WIDGET_URL = 'http://service.weibo.com/widget/widget_blog.php';
-const API_URL = 'https://m.weibo.cn/api/container/getIndex';
-const DETAIL_URL = 'https://m.weibo.cn/status/';
-const DETAIL_API_URL = 'https://m.weibo.cn/statuses/show?id=';
-const PROFILE_URL = 'https://weibo.com/';
-
-exports.fetchRSS = function(uid, options) {
+exports.fetchRSS = function (uid, options) {
+  if (!options) options = {};
   // 大图显示
   if (options.largePic === undefined) {
     options.largePic = true;
@@ -36,55 +30,38 @@ exports.fetchRSS = function(uid, options) {
   if (options.ttl === undefined) {
     options.ttl = 15;
   }
-
-  var feed; // NodeRSS 对象
-  // 第一步，获取用户的信息
-  return getUserInfo(uid).then(function (data) {
-    // 初始化 NodeRSS
-    feed = new RSS({
-      site_url: PROFILE_URL + data.userInfo.id,
-      title: data.userInfo.screen_name + '的微博',
-      description: data.userInfo.description,
-      generator: 'https://github.com/zgq354/weibo-rss',
-      ttl: options.ttl
-    });
-
-    // 获取container id
-    const containerId = data.containerId;
-    // 下一步，获取用户最近的微博
-    return getIdList(uid, containerId);
-  }).then(function (list) {
-    // 获取微博内容
-    var listPromises = [];
-    list.forEach(function (id) {
-      listPromises.push(getDetials(id, uid));
-    });
-
-    // 下一步：处理构造好的Promise的并发请求结果
-    return Promise.all(listPromises);
-  }).then(function (resArr) {
-    resArr.forEach(function (data) {
-      if (!data) return;
-
-      // 构造feed中的item
-      feed.item({
-        title: data.status_title,
-        description: formatStatus(data, options.largePic),
-        url: DETAIL_URL + data.id,
-        guid: DETAIL_URL + data.id,
-        date: new Date(data.created_at)
+  // 获取微博
+  return getWeibo(uid)
+    .then(function (weiboData) {
+      // metadata
+      var feed = new RSS({
+        site_url: "https://weibo.com/" + weiboData.user.id,
+        title: weiboData.user.screen_name + '的微博',
+        description: weiboData.user.description,
+        generator: 'https://github.com/zgq354/weibo-rss',
+        ttl: options.ttl
       });
+      // content
+      weiboData.statuses.forEach(function (detail) {
+        if (!detail) return;
+        // 构造feed中的item
+        feed.item({
+          title: detail.status_title,
+          description: formatStatus(detail, options.largePic),
+          url: 'https://m.weibo.cn/status/' + detail.id,
+          guid: 'https://m.weibo.cn/status/' + detail.id,
+          date: new Date(detail.created_at)
+        });
+      });
+      // 成功的情况
+      return Promise.resolve(feed.xml());
     });
-
-    // 成功的情况
-    return Promise.resolve(feed.xml());
-  });
-};
+}
 
 // 通过用户的个性域名获取UID
 exports.getUIDByDomain = function (domain) {
   // 利用手机版的跳转获取containerid
-  return axios.get(PROFILE_URL + domain, {
+  return axios.get('https://weibo.com/' + domain, {
     headers: {
       'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'
     }
@@ -94,156 +71,122 @@ exports.getUIDByDomain = function (domain) {
   });
 };
 
-// 获取用户 Profile
-function getUserInfo(uid) {
-  var key = `weibo-rss-info-${uid}`;
-  return cache.get(key).then(function (result) {
-    if (result) {
-      return Promise.resolve(JSON.parse(result), true);
-    } else {
-      return getUserInfoByMobile(uid).then(function (resultObj) {
-        if (resultObj) {
-          return Promise.resolve(resultObj);
-        } else {
-          return getUserInfoByWidget(uid);
-        }
-      });
-    }
-  }).then(function (resultObj, isCache) {
-    if (!isCache) {
-      dataStr = JSON.stringify(resultObj);
-      // 设置缓存
-      cache.set(key, dataStr, infoExpire);
-    }
-    return Promise.resolve(resultObj);
-  });
+// 获取目标最近的微博
+function getWeibo(uid) {
+  return getWeiboByPWA(uid)
+    .then(function (data) {
+      // 备选方案
+      if (!data) return getWeiboByWidget(uid);
+      return Promise.resolve(data);
+    })
+    .then(function (data) {
+      if (!data) return Promise.reject('user_not_found');
+      return processDetails(data);
+    });
 }
 
-// HTML5
-function getUserInfoByMobile(uid) {
+// 补充全文和细节
+function processDetails(data) {
+  var listPromises = [];
+  data.statuses.forEach(function (status) {
+    // 判断是否需要请求全文
+    if (!status.need_detail && !status.isLongText && (!status.retweeted_status || !status.retweeted_status.isLongText)) {
+      listPromises.push(Promise.resolve(status));
+    } else {
+      listPromises.push(getDetail(status.id));
+    }
+  });
+  return Promise.all(listPromises)
+    .then(function (listArr) {
+      data.statuses = listArr;
+      return Promise.resolve(data);
+    });
+}
+
+// PWA
+function getWeiboByPWA(uid) {
   return infoQueue.add(function () {
-    return axios.get(API_URL, {
-      params: {
-        type: 'uid',
-        value: uid
-      },
+    return axios.get(`https://m.weibo.cn/profile/info?uid=${uid}`, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'
       }
     }).then(function (res) {
       const data = res.data || {};
       if (typeof data !== 'object') return Promise.resolve(false);
-      const userInfo = data.userInfo || data.data.userInfo || false;
-      const tabsInfo = data.tabsInfo || data.data.tabsInfo || false;
-      if (!userInfo || !tabsInfo) {
+      // 用户不存在
+      if (data.ok !== 1) return Promise.resolve(false);
+
+      return Promise.resolve(data.data);
+    });
+  });
+}
+
+// 通过 Widget 获得目标最近微博列表
+function getWeiboByWidget(uid) {
+  logger.info(`get by widget uid: ${uid}`);
+  var data = {};
+  return getListByWidget(uid)
+    .then(function (statuses) {
+      data.statuses = statuses;
+      return getDetail(statuses[0].id, uid);
+    })
+    .then(function (detail) {
+      // 额外获取用户信息
+      data.user = detail.user;
+      return Promise.resolve(data);
+    })
+    .catch(function (err) {
+      // 用户不存在
+      if (err === "user_not_found") {
         return Promise.resolve(false);
       }
-      // 获取container id
-      const containerId = tabsInfo.tabs[1].containerid;
-      if (!containerId) {
-        return Promise.resolve(false);
-      }
-      var resultObj = {
-        userInfo: userInfo,
-        containerId: containerId
-      };
-      return Promise.resolve(resultObj);
+      // 其它错误，抛给上层
+      return Promise.reject(err);
     });
-  });
 }
 
-// Widget
-function getUserInfoByWidget(uid) {
-  logger.info(`get user by widget uid: ${uid}`);
-  return getListByWidget(uid).then(function (list) {
-    var id = list.pop();
-    return getDetials(id, uid);
-  }).then(function (detail) {
-    return Promise.resolve({
-      userInfo: detail.user
-    });
-  });
-}
-
-// 获取列表
-function getIdList(uid, containerId) {
-  if (containerId) {
-    return getListByMobile(uid, containerId);
-  } else {
-    return getListByWidget(uid);
-  }
-}
-
-// HTML5
-function getListByMobile(uid, containerId) {
-  return infoQueue.add(function () {
-    return axios.get(API_URL, {
-      params: {
-        type: 'uid',
-        value: uid,
-        containerid: containerId
-      },
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'
-      }
-    }).then(function (res) {
-      const data = res.data || {};
-      const cards = data.cards || data.data.cards || {};
-
-      // 过滤掉多余的card
-      var list = cards.filter(function (item) {
-        return item.card_type == 9;
-      });
-      // 结果列表
-      var result = [];
-      list.forEach(function (item) {
-        result.push(item.mblog.id);
-      });
-      return Promise.resolve(result);
-    });
-  });
-}
-
-// Widget
+// 通过 Widget 获取最近微博的 List
 function getListByWidget(uid) {
   return infoQueue.add(function () {
-    return axios.get(WIDGET_URL, {
-      params: {
-        uid: uid
-      },
+    return axios.get(`http://service.weibo.com/widget/widget_blog.php?uid=${uid}`, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36'
       }
-    }).then(function (res) {
-      const data = res.data;
-      var linkArr = data.match(/<a href="http:\/\/weibo\.com\/\d+?\/(.*)?" title="" target="_blank" class="link_d">/g);
-      if (!linkArr) return Promise.reject(`User not found`);
-      // 结果列表
-      var result = [];
-      linkArr.forEach(function (v) {
-        result.push(v.match(/<a href="http:\/\/weibo\.com\/\d+?\/(.*)?" title="" target="_blank" class="link_d">/)[1]);
+    })
+      .then(function (res) {
+        const data = res.data;
+        var linkArr = data.match(/<a href="http:\/\/weibo\.com\/\d+?\/(.*)?" title="" target="_blank" class="link_d">/g);
+        if (!linkArr) return Promise.reject("user_not_found");
+        // 结果列表
+        var result = [];
+        linkArr.forEach(function (v) {
+          result.push({
+            id: v.match(/<a href="http:\/\/weibo\.com\/\d+?\/(.*)?" title="" target="_blank" class="link_d">/)[1],
+            need_detail: true,
+          });
+        });
+        // 截取前十条
+        result = result.slice(0, 10);
+        return Promise.resolve(result);
       });
-      // 截取前十条
-      result = result.slice(0, 10);
-      return Promise.resolve(result);
-    });
   });
 }
 
-// 自动缓存单条微博详情，减少并发请求数量
-function getDetials(id, uid) {
-  var key = `weibo-rss-details-${uid}-${id}`;
+// 获取单条微博的详情
+function getDetail(id) {
+  var key = `details-${id}`;
   return cache.get(key).then(function (result) {
     if (result) {
       return Promise.resolve(result);
     } else {
       // 缓存不存在则发出请求
       return contentQueue.add(function () {
-        return axios.get(DETAIL_API_URL + id, {
+        return axios.get('https://m.weibo.cn/statuses/show?id=' + id, {
           headers: {
             'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'
           }
-        }).then(function (res) {
+        })
+        .then(function (res) {
           data = res.data;
           // 获取微博数据
           data = data.data;
@@ -280,7 +223,7 @@ function formatStatus(status, largePic = true) {
     // 当转发的微博被删除时user为null
     if (status.retweeted_status.user)
     temp += '<div style="border-left: 3px solid gray; padding-left: 1em;">'
-          + '转发 <a href="' + PROFILE_URL + status.retweeted_status.user.id + '" target="_blank">@' + status.retweeted_status.user.screen_name + '</a>: ';
+          + '转发 <a href="' + 'https://weibo.com/' + status.retweeted_status.user.id + '" target="_blank">@' + status.retweeted_status.user.screen_name + '</a>: ';
     // 插入转发的微博
     temp += formatStatus(status.retweeted_status, largePic);
     temp += '</div>';

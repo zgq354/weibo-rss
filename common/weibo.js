@@ -60,15 +60,25 @@ exports.fetchRSS = function (uid, options) {
 
 // 通过用户的个性域名获取UID
 exports.getUIDByDomain = function (domain) {
-  // 利用手机版的跳转获取containerid
-  return axios.get('https://weibo.com/' + domain, {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'
-    }
-  }).then(function (data) {
-    const uid = data.request.path.split("/u/")[1];
-    return Promise.resolve(uid);
-  });
+  if (domain.match(/^\d{1,9}$/g)) {
+    // 较短的纯数字UID通过WAP版得到完整UID
+    return axios.get('https://weibo.cn/' + domain)
+      .then(function (res) {
+        const data = res.data;
+        const uid = data.match(/<a href="\/(\d{10})\/follow">/)[1];
+        return Promise.resolve(uid);
+      });
+  } else {
+    // 个性域名则利用手机版的跳转获取
+    return axios.get('https://weibo.com/' + domain, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'
+      }
+    }).then(function (data) {
+      const uid = data.request.path.split("/u/")[1];
+      return Promise.resolve(uid);
+    });
+  }
 };
 
 // 获取目标最近的微博

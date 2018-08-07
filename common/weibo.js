@@ -46,7 +46,7 @@ exports.fetchRSS = function (uid, options) {
         if (!detail) return;
         // 构造feed中的item
         feed.item({
-          title: detail.status_title,
+          title: detail.status_title || (detail.text ? detail.text.replace(/<[^>]+>/g, '').replace(/[\n【】\[\]]/g, '').substr(0, 25) : null),
           description: formatStatus(detail, options.largePic),
           url: 'https://m.weibo.cn/status/' + detail.id,
           guid: 'https://m.weibo.cn/status/' + detail.id,

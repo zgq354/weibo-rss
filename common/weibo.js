@@ -133,7 +133,7 @@ function getWeiboByPWA(uid) {
 
 // 通过 Widget 获得目标最近微博列表
 function getWeiboByWidget(uid) {
-  logger.info(`get by widget uid: ${uid}`);
+  logger.info(`get ${uid} by widget`);
   var data = {};
   return getListByWidget(uid)
     .then(function (statuses) {

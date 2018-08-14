@@ -21,7 +21,7 @@ router.get('/:id', function(req, res, next) {
   var options = {
     largePic,
     ttl: TTL
-  };  
+  };
 
   // 获取 IP地址
   var ip = req.headers['x-forwarded-for'] ||
@@ -30,12 +30,12 @@ router.get('/:id', function(req, res, next) {
   req.connection.socket.remoteAddress;
 
   // 验证参数格式
-  if (!/^[0-9]*$/.test(uid)) {
-    console.log("Invalid Format");
+  if (!/^[0-9]{10}$/.test(uid)) {
+    logger.error(`Invalid Format ${uid} ${ip}`);
     return next();
   }
 
-  logger.info(`get weibo of uid: ${uid} - IP: ${ip}`);
+  logger.info(`get ${uid} ${ip}`);
 
   // 读取缓存
   var key = `total-${uid}${largePic ? '' : '-small'}`;

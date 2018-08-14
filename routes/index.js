@@ -21,18 +21,18 @@ router.get('/convert', function (req, res, next) {
     });
   } else {
     weibo.getUIDByDomain(domain)
-    .then(function (uid) {
-      res.send({
-        success: true,
-        uid: uid
+      .then(function (uid) {
+        res.send({
+          success: true,
+          uid: uid
+        });
+      })
+      .catch(function (err) {
+        res.send({
+          success: false,
+          msg: '获取数据时发生了错误'
+        });
       });
-    })
-    .catch(function (err) {
-      res.send({
-        success: false,
-        msg: '获取数据时发生了错误'
-      });
-    });
   }
 });
 

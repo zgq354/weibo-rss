@@ -1,17 +1,18 @@
 var express = require('express');
 var path = require('path');
-var logger = require('morgan');
+var logger = require('./common/logger');
 
-var weibo = require('./routes/weibo');
+var rss = require('./routes/rss');
 var index = require('./routes/index');
 
 var app = express();
 
-// app.use(logger('dev'));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', index);
-app.use('/rss', weibo);
+app.use('/rss', rss);
+
+logger.info(`weibo-rss start`);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -1,4 +1,4 @@
-FROM daocloud.io/node:6.9.0
+FROM daocloud.io/node:8
 LABEL maintainer="https://github.com/zgq354/weibo-rss"
 RUN mkdir /app
 WORKDIR /app

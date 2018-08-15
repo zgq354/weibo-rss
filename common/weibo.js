@@ -7,6 +7,11 @@ var logger = require('./logger');
 var cache = require('./cache');
 var Queue = require('np-queue');
 
+// 请求超时的情况
+var axiosInstance = axios.create({
+  timeout: 3000,
+});
+
 // 缓存过期时间
 const contentExpire = 7 * 24 * 3600;
 
@@ -54,7 +59,7 @@ exports.fetchRSS = function (uid, options) {
         });
       });
       // 成功的情况
-      return Promise.resolve(feed.xml());
+      return feed.xml();
     });
 }
 
@@ -62,21 +67,21 @@ exports.fetchRSS = function (uid, options) {
 exports.getUIDByDomain = function (domain) {
   if (domain.match(/^\d{1,9}$/g)) {
     // 较短的纯数字UID通过WAP版得到完整UID
-    return axios.get('https://weibo.cn/' + domain)
+    return axiosInstance.get('https://weibo.cn/' + domain)
       .then(function (res) {
         const data = res.data;
         const uid = data.match(/<a href="\/(\d{10})\/follow">/)[1];
-        return Promise.resolve(uid);
+        return uid;
       });
   } else {
     // 个性域名则利用手机版的跳转获取
-    return axios.get('https://weibo.com/' + domain, {
+    return axiosInstance.get('https://weibo.com/' + domain, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'
       }
     }).then(function (data) {
       const uid = data.request.path.split("/u/")[1];
-      return Promise.resolve(uid);
+      return uid;
     });
   }
 };
@@ -87,7 +92,7 @@ function getWeibo(uid) {
     .then(function (data) {
       // 备选方案
       if (!data) return getWeiboByWidget(uid);
-      return Promise.resolve(data);
+      return data;
     })
     .then(function (data) {
       if (!data) return Promise.reject('user_not_found');
@@ -98,35 +103,41 @@ function getWeibo(uid) {
 // 补充全文和细节
 function processDetails(data) {
   var listPromises = [];
-  data.statuses.forEach(function (status) {
+  data.statuses.forEach(function (status, i) {
     // 判断是否需要请求全文
     if (!status.need_detail && !status.isLongText && (!status.retweeted_status || !status.retweeted_status.isLongText)) {
-      listPromises.push(Promise.resolve(status));
+      listPromises.push(status);
     } else {
-      listPromises.push(getDetail(status.id));
+      listPromises.push(getDetail(status.id)
+        .then(function (detail) {
+          // 全文获取失败，恢复原状
+          if (!detail) {
+            return status;
+          }
+          return detail;
+        }));
     }
   });
   return Promise.all(listPromises)
     .then(function (listArr) {
       data.statuses = listArr;
-      return Promise.resolve(data);
+      return data;
     });
 }
 
 // PWA
 function getWeiboByPWA(uid) {
   return infoQueue.add(function () {
-    return axios.get(`https://m.weibo.cn/profile/info?uid=${uid}`, {
+    return axiosInstance.get(`https://m.weibo.cn/profile/info?uid=${uid}`, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'
       }
     }).then(function (res) {
       const data = res.data || {};
-      if (typeof data !== 'object') return Promise.resolve(false);
+      if (typeof data !== 'object') return false;
       // 用户不存在
-      if (data.ok !== 1) return Promise.resolve(false);
-
-      return Promise.resolve(data.data);
+      if (data.ok !== 1) return false;
+      return data.data;
     });
   });
 }
@@ -143,12 +154,12 @@ function getWeiboByWidget(uid) {
     .then(function (detail) {
       // 额外获取用户信息
       data.user = detail.user;
-      return Promise.resolve(data);
+      return data;
     })
     .catch(function (err) {
       // 用户不存在
       if (err === "user_not_found") {
-        return Promise.resolve(false);
+        return false;
       }
       // 其它错误，抛给上层
       return Promise.reject(err);
@@ -158,7 +169,7 @@ function getWeiboByWidget(uid) {
 // 通过 Widget 获取最近微博的 List
 function getListByWidget(uid) {
   return infoQueue.add(function () {
-    return axios.get(`http://service.weibo.com/widget/widget_blog.php?uid=${uid}`, {
+    return axiosInstance.get(`http://service.weibo.com/widget/widget_blog.php?uid=${uid}`, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36'
       }
@@ -177,7 +188,7 @@ function getListByWidget(uid) {
         });
         // 截取前十条
         result = result.slice(0, 10);
-        return Promise.resolve(result);
+        return result;
       });
   });
 }
@@ -187,11 +198,11 @@ function getDetail(id) {
   var key = `details-${id}`;
   return cache.get(key).then(function (result) {
     if (result) {
-      return Promise.resolve(result);
+      return result;
     } else {
       // 缓存不存在则发出请求
       return contentQueue.add(function () {
-        return axios.get('https://m.weibo.cn/statuses/show?id=' + id, {
+        return axiosInstance.get('https://m.weibo.cn/statuses/show?id=' + id, {
           headers: {
             'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'
           }
@@ -203,7 +214,7 @@ function getDetail(id) {
           // 设置缓存
           cache.set(key, data, contentExpire);
           // 别忘了返回数据
-          return Promise.resolve(data);
+          return data;
         });
       });
     }

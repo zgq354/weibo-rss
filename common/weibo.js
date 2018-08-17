@@ -35,6 +35,10 @@ exports.fetchRSS = function (uid, options) {
   if (options.ttl === undefined) {
     options.ttl = 15;
   }
+  // 表情图标
+  if (options.emoji === undefined) {
+    options.emoji = false;
+  }
   // 获取微博
   return getWeibo(uid)
     .then(function (weiboData) {
@@ -52,7 +56,7 @@ exports.fetchRSS = function (uid, options) {
         // 构造feed中的item
         feed.item({
           title: detail.status_title || (detail.text ? detail.text.replace(/<[^>]+>/g, '').replace(/[\n]/g, '').substr(0, 25) : null),
-          description: formatStatus(detail, options.largePic),
+          description: formatStatus(detail, options.largePic, options.emoji),
           url: 'https://m.weibo.cn/status/' + detail.id,
           guid: 'https://m.weibo.cn/status/' + detail.id,
           date: new Date(detail.created_at)
@@ -222,15 +226,18 @@ function getDetail(id) {
 }
 
 // 格式化每条微博的HTML
-function formatStatus(status, largePic = true) {
+function formatStatus(status, largePic = true, emoji = false) {
   // 长文章的处理
   var temp = status.longText ? status.longText.longTextContent.replace(/\n/g, '<br>') : status.text;
   // 某些纯图片微博 status.text 的值为 null
   if (!temp) temp = "";
-  // 表情图标转换为文字
-  temp = temp.replace(/<span class="url-icon"><img alt="(.*?)" src=".*?" style="width:1em; height:1em;"\/><\/span>/g, '$1');
-  // 去掉外部链接的图标
-  temp = temp.replace(/<span class='url-icon'><img.*?><\/span>/g, '');
+
+  if (!emoji) {
+    // 表情图标转换为文字
+    temp = temp.replace(/<span class="url-icon"><img alt="(.*?)" src=".*?" style="width:1em; height:1em;"\/><\/span>/g, '$1');
+    // 去掉外部链接的图标
+    temp = temp.replace(/<span class='url-icon'><img.*?><\/span>/g, '');
+  }
 
   // 处理外部链接
   temp = temp.replace(/https:\/\/weibo\.cn\/sinaurl\/.*?&u=(http.*?\")/g, function (match, p1) {
@@ -246,10 +253,9 @@ function formatStatus(status, largePic = true) {
     temp += '<div style="border-left: 3px solid gray; padding-left: 1em;">'
           + '转发 <a href="' + 'https://weibo.com/' + status.retweeted_status.user.id + '" target="_blank">@' + status.retweeted_status.user.screen_name + '</a>: ';
     // 插入转发的微博
-    temp += formatStatus(status.retweeted_status, largePic);
+    temp += formatStatus(status.retweeted_status, largePic, emoji);
     temp += '</div>';
   }
-
   // 添加微博配图
   if (status.pics) {
     status.pics.forEach(function (item) {

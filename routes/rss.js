@@ -17,10 +17,11 @@ router.get('/:id', function(req, res, next) {
   var uid = req.params['id'];
   // 是否大图
   var largePic = req.query.largePic ? !!parseInt(req.query.largePic) : true;
-
+  var emoji = req.query.emoji ? !!parseInt(req.query.emoji) : false;
   var options = {
     largePic,
-    ttl: TTL
+    ttl: TTL,
+    emoji
   };
 
   // 获取 IP地址
@@ -38,7 +39,7 @@ router.get('/:id', function(req, res, next) {
   logger.info(`get ${uid} ${ip}`);
 
   // 读取缓存
-  var key = `total-${uid}${largePic ? '' : '-small'}`;
+  var key = `total-${uid}${largePic ? '' : '-small'}${emoji ? '-emoji' : ''}`;
   cache.get(key).then(function (result) {
     if (result) {
       return Promise.resolve(result);

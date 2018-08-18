@@ -249,12 +249,13 @@ function formatStatus(status, largePic = true, emoji = false) {
     // 先加入两个空行
     temp += "<br><br>";
     // 当转发的微博被删除时user为null
-    if (status.retweeted_status.user)
-    temp += '<div style="border-left: 3px solid gray; padding-left: 1em;">'
-          + '转发 <a href="' + 'https://weibo.com/' + status.retweeted_status.user.id + '" target="_blank">@' + status.retweeted_status.user.screen_name + '</a>: ';
-    // 插入转发的微博
-    temp += formatStatus(status.retweeted_status, largePic, emoji);
-    temp += '</div>';
+    if (status.retweeted_status.user) {
+      // 插入转发的微博
+      temp += '<div style="border-left: 3px solid gray; padding-left: 1em;">'
+            + '转发 <a href="https://weibo.com/' + status.retweeted_status.user.id + '" target="_blank">@' + status.retweeted_status.user.screen_name + '</a>: '
+            + formatStatus(status.retweeted_status, largePic, emoji)
+            + '</div>';
+    }
   }
   // 添加微博配图
   if (status.pics) {

@@ -53,7 +53,6 @@ exports.fetchRSS = function (uid, options) {
       // content
       weiboData.statuses.forEach(function (detail) {
         if (!detail) return;
-        // 构造feed中的item
         feed.item({
           title: detail.status_title || (detail.text ? detail.text.replace(/<[^>]+>/g, '').replace(/[\n]/g, '').substr(0, 25) : null),
           description: formatStatus(detail, options.largePic, options.emoji),
@@ -62,32 +61,21 @@ exports.fetchRSS = function (uid, options) {
           date: new Date(detail.created_at)
         });
       });
-      // 成功的情况
       return feed.xml();
     });
 }
 
 // 通过用户的个性域名获取UID
 exports.getUIDByDomain = function (domain) {
-  if (domain.match(/^\d{1,9}$/g)) {
-    // 较短的纯数字UID通过WAP版得到完整UID
-    return axiosInstance.get('https://weibo.cn/' + domain)
-      .then(function (res) {
-        const data = res.data;
-        const uid = data.match(/<a href="\/(\d{10})\/follow">/)[1];
-        return uid;
-      });
-  } else {
-    // 个性域名则利用手机版的跳转获取
-    return axiosInstance.get('https://weibo.com/' + domain, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'
-      }
-    }).then(function (data) {
-      const uid = data.request.path.split("/u/")[1];
-      return uid;
-    });
-  }
+  // 利用手机版的跳转获取
+  return axiosInstance.get('https://weibo.com/' + domain, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'
+    }
+  }).then(function (data) {
+    const uid = data.request.path.split("/u/")[1];
+    return uid;
+  });
 };
 
 // 获取目标最近的微博
@@ -108,7 +96,6 @@ function getWeibo(uid) {
 function processDetails(data) {
   var listPromises = [];
   data.statuses.forEach(function (status, i) {
-    // 判断是否需要请求全文
     if (!status.need_detail && !status.isLongText && (!status.retweeted_status || !status.retweeted_status.isLongText)) {
       listPromises.push(status);
     } else {
@@ -161,7 +148,6 @@ function getWeiboByWidget(uid) {
       return data;
     })
     .catch(function (err) {
-      // 用户不存在
       if (err === "user_not_found") {
         return false;
       }
@@ -182,7 +168,6 @@ function getListByWidget(uid) {
         const data = res.data;
         var linkArr = data.match(/<a href="http:\/\/weibo\.com\/\d+?\/(.*)?" title="" target="_blank" class="link_d">/g);
         if (!linkArr) return Promise.reject("user_not_found");
-        // 结果列表
         var result = [];
         linkArr.forEach(function (v) {
           result.push({
@@ -190,7 +175,6 @@ function getListByWidget(uid) {
             need_detail: true,
           });
         });
-        // 截取前十条
         result = result.slice(0, 10);
         return result;
       });
@@ -204,7 +188,6 @@ function getDetail(id) {
     if (result) {
       return result;
     } else {
-      // 缓存不存在则发出请求
       return contentQueue.add(function () {
         return axiosInstance.get('https://m.weibo.cn/statuses/show?id=' + id, {
           headers: {
@@ -213,11 +196,8 @@ function getDetail(id) {
         })
         .then(function (res) {
           data = res.data;
-          // 获取微博数据
           data = data.data;
-          // 设置缓存
           cache.set(key, data, contentExpire);
-          // 别忘了返回数据
           return data;
         });
       });
@@ -246,7 +226,6 @@ function formatStatus(status, largePic = true, emoji = false) {
 
   // 处理转发的微博
   if (status.retweeted_status) {
-    // 先加入两个空行
     temp += "<br><br>";
     // 当转发的微博被删除时user为null
     if (status.retweeted_status.user) {
@@ -260,7 +239,6 @@ function formatStatus(status, largePic = true, emoji = false) {
   // 添加微博配图
   if (status.pics) {
     status.pics.forEach(function (item) {
-      // 先加入两个空行
       temp += "<br><br>";
       // 点击链接打开图片
       temp += '<a href="' + item.large.url + '" target="_blank"><img src="' + (largePic ? item.large.url : item.url) + '"></a>';

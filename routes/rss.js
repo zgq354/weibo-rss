@@ -13,9 +13,8 @@ const TTL = 15;
 
 /* GET weibo rss. */
 router.get('/:id', function(req, res, next) {
-  // 传入微博用户的uid
   var uid = req.params['id'];
-  // 是否大图
+  // 参数设定
   var largePic = req.query.largePic ? !!parseInt(req.query.largePic) : true;
   var emoji = req.query.emoji ? !!parseInt(req.query.emoji) : false;
   var options = {
@@ -38,7 +37,6 @@ router.get('/:id', function(req, res, next) {
 
   logger.info(`get ${uid} ${ip}`);
 
-  // 读取缓存
   var key = `total-${uid}${largePic ? '' : '-small'}${emoji ? '-emoji' : ''}`;
   cache.get(key).then(function (result) {
     if (result) {
@@ -46,7 +44,6 @@ router.get('/:id', function(req, res, next) {
     } else {
       // 抓取
       return weibo.fetchRSS(uid, options).then(function (data) {
-        // 存入缓存
         cache.set(key, data, TTL * 60);
         return Promise.resolve(data);
       }).catch(function (err) {

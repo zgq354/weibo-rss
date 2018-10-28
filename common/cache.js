@@ -16,14 +16,11 @@ var db = levelup(leveldown(path.join('data', DB_FILENAME)));
 // 删除过期缓存的计划任务
 schedule.scheduleJob("0 30 2 * * *", function () {
   logger.info('Cache cleaning start');
-  // 统计
   var total = 0, deleted = 0;
-  // 遍历缓存条目
   db.createReadStream()
     .on('data', function (item) {
       total++;
       var data = JSON.parse(item.value.toString());
-      // 删除已经过期的缓存
       if (data.expire && Date.now() - data.created > data.expire * 1000) {
         deleted++;
         db.del(item.key, function (error) {
@@ -53,7 +50,6 @@ module.exports.set = function (key, value, expire) {
     db.put(key, JSON.stringify(data), function (err) {
       if (err) return reject(err);
     });
-    // logger.info('Set cache: ' + key);
   });
 };
 
@@ -68,7 +64,6 @@ module.exports.get = function (key) {
         return reject(err);
       }
       var data = JSON.parse(value);
-      // 检查过期
       if (data.expire && Date.now() - data.created > data.expire * 1000) {
         resolve();
       } else {

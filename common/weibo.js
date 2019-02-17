@@ -56,8 +56,8 @@ exports.fetchRSS = function (uid, options) {
         feed.item({
           title: detail.status_title || (detail.text ? detail.text.replace(/<[^>]+>/g, '').replace(/[\n]/g, '').substr(0, 25) : null),
           description: formatStatus(detail, options.largePic, options.emoji),
-          url: 'https://m.weibo.cn/status/' + detail.id,
-          guid: 'https://m.weibo.cn/status/' + detail.id,
+          url: 'https://weibo.com/' + weiboData.user.id + '/' + detail.bid,
+          guid: 'https://weibo.com/' + weiboData.user.id + '/' + detail.bid,
           date: new Date(detail.created_at)
         });
       });

@@ -1,13 +1,28 @@
 # weibo-rss
-把某人的微博转换成 RSS Feed，支持长微博，配图，链接的输出。
-
-## 介绍
-weibo-rss 是一个简单的 RSS Feed 生成器，通过它可以将微博博主最近发布的微博转换为 RSS 格式输出。  
-通过 RSS 订阅微博，即使生活再繁忙，也不再错过喜欢的博主的微博更新。
+微博 RSS 订阅源生成器，可将某人最近发布的微博转换为符合 RSS Feed 标准的格式订阅。  
+支持长微博、所有配图、链接的完整输出。  
+致力于一目了然的微博阅读体验。  
+[测试预览](https://api.izgq.net/weibo/)
 
 ## 部署
-运行环境：Node.js >= v6.9.0  
-详情参见 [项目Wiki](https://github.com/zgq354/weibo-rss/wiki)  
+运行环境：`Node.js >= v8.0.0`  
+安装：
+```
+git clone https://github.com/zgq354/weibo-rss.git
+cd weibo-rss
+npm install
+```
+启动：  
+```
+npm install pm2 -g
+pm2 start bin/www
+```
+
+更多配置参考 [项目Wiki](https://github.com/zgq354/weibo-rss/wiki)  
+
+## 赞助
+若本项目为你的生活增添了许多便利，不妨考虑支持一下作者？  
+[赞助作者](https://blog.izgq.net/donate.html)
 
 ## License
 MIT

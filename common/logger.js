@@ -4,6 +4,7 @@
 
 var logger = require('tracer').colorConsole({
   format : "[{{timestamp}}] [{{title}}] {{message}}",
+  level: 'info',
 });
 
 

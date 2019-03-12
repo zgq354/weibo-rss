@@ -143,7 +143,6 @@ function getWeiboByWidget(uid) {
       return getDetail(statuses[0].id, uid);
     })
     .then(function (detail) {
-      // 额外获取用户信息
       data.user = detail.user;
       return data;
     })
@@ -151,7 +150,6 @@ function getWeiboByWidget(uid) {
       if (err === "user_not_found") {
         return false;
       }
-      // 其它错误，抛给上层
       return Promise.reject(err);
     });
 }
@@ -205,9 +203,9 @@ function getDetail(id) {
   });
 }
 
-// 格式化每条微博的HTML
+// 生成每条微博的HTML
 function formatStatus(status, largePic = true, emoji = false) {
-  // 长文章的处理
+  // 长文章处理
   var temp = status.longText ? status.longText.longTextContent.replace(/\n/g, '<br>') : status.text;
   // 某些纯图片微博 status.text 的值为 null
   if (!temp) temp = "";
@@ -227,9 +225,8 @@ function formatStatus(status, largePic = true, emoji = false) {
   // 处理转发的微博
   if (status.retweeted_status) {
     temp += "<br><br>";
-    // 当转发的微博被删除时user为null
+    // 可能有转发的微博被删除的情况
     if (status.retweeted_status.user) {
-      // 插入转发的微博
       temp += '<div style="border-left: 3px solid gray; padding-left: 1em;">'
             + '转发 <a href="https://weibo.com/' + status.retweeted_status.user.id + '" target="_blank">@' + status.retweeted_status.user.screen_name + '</a>: '
             + formatStatus(status.retweeted_status, largePic, emoji)
@@ -240,7 +237,6 @@ function formatStatus(status, largePic = true, emoji = false) {
   if (status.pics) {
     status.pics.forEach(function (item) {
       temp += "<br><br>";
-      // 点击链接打开图片
       temp += '<a href="' + item.large.url + '" target="_blank"><img src="' + (largePic ? item.large.url : item.url) + '"></a>';
     });
   }

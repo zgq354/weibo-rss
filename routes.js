@@ -10,7 +10,7 @@ router.get('/rss/:id', getWeiboRSS);
 
 // Domain to uid
 async function convertDomain(ctx) {
-  const domain = ctx.req.query['domain'];
+  const domain = ctx.request.query['domain'];
   try {
     // Verify
     if (!domain || !/^[A-Za-z0-9]{3,20}$/.test(domain)) {

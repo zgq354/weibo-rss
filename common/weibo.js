@@ -240,5 +240,7 @@ function formatStatus(status, largePic = true, emoji = false) {
       temp += '<a href="' + item.large.url + '" target="_blank"><img src="' + (largePic ? item.large.url : item.url) + '"></a>';
     });
   }
+  //表情处理
+  temp = temp.replace(/src=\"\//g,'src="https:/');
   return temp;
 }

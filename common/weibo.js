@@ -212,7 +212,7 @@ function formatStatus(status, largePic = true, emoji = false) {
 
   if (!emoji) {
     // 表情图标转换为文字
-    temp = temp.replace(/<span class="url-icon"><img alt="(.*?)" src=".*?" style="width:1em; height:1em;"\/><\/span>/g, '$1');
+    temp = temp.replace(/<span class="url-icon"><img alt=(.*?) src="(.*?)" style="width:1em; height:1em;" \/><\/span>/g,'$1');
     // 去掉外部链接的图标
     temp = temp.replace(/<span class='url-icon'><img.*?><\/span>/g, '');
   }

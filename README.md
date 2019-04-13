@@ -4,7 +4,7 @@
 支持长微博、所有配图、链接的完整输出。  
 致力于一目了然的微博阅读体验。  
 
-[测试预览](https://wbrss.herokuapp.com)
+[测试预览](https://api.izgq.net/weibo/)
 
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
@@ -13,7 +13,7 @@
 运行环境：`Node.js >= v8.0.0`  
 安装：
 ```
-git clone https://github.com/zgq354/weibo-rss.git
+git clone https://github.com/huan/weibo-rss.git
 cd weibo-rss
 npm install
 ```
@@ -24,6 +24,17 @@ pm2 start bin/www
 ```
 
 更多配置参考 [项目Wiki](https://github.com/zgq354/weibo-rss/wiki)  
+
+## 历史记录
+
+* Apr 2019
+
+1. Add Heroku Button by @huan
+
+## 作者
+
+1. [更好地使用 RSS 订阅喜欢的微博博主](https://blog.izgq.net/archives/877/)
+1. @[huan](https://github.com/huan)
 
 ## 赞助
 

@@ -1,0 +1,21 @@
+{
+  "name": "weibo-rss",
+  "description": "Heroku Weibo Rss Generator",
+  "repository": "https://github.com/zgq354/weibo-rss",
+  "logo": "https://huan.github.io/weibo-rss/images/weibo-rss.png",
+  "keywords": [
+    "weibo",
+    "rss"
+  ],
+  "website": "https://blog.izgq.net/archives/877/",
+  "success_url": "/",
+  "env": {
+    "EXAMPLE": {
+      "description": "Example",
+      "required": false
+    }
+  },
+  "engines": {
+    "node": "10"
+  }
+}

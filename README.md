@@ -13,7 +13,7 @@
 运行环境：`Node.js >= v8.0.0`  
 安装：
 ```
-git clone https://github.com/huan/weibo-rss.git
+git clone https://github.com/zgq354/weibo-rss.git
 cd weibo-rss
 npm install
 ```

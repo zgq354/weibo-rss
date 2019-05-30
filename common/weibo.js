@@ -137,7 +137,7 @@ const avaliableMethod = {
   },
   check: function (name) {
     let methodObj = this.methods[name];
-    if (!methodObj.enable && Date.now() - methodObj.lastUpdatedTime > retryDelay) {
+    if (!methodObj.enable && Date.now() - methodObj.lastUpdatedTime > methodObj.retryDelay) {
       methodObj.enable = true;
     }
     return methodObj.enable;

@@ -1,12 +1,12 @@
 {
   "name": "weibo-rss",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "scripts": {
     "start": "node ./bin/www"
   },
   "dependencies": {
-    "axios": "^0.16.2",
+    "axios": "^0.18.0",
     "koa": "^2.7.0",
     "koa-router": "^7.4.0",
     "koa-static": "^5.0.0",

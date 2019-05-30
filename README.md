@@ -8,16 +8,16 @@
 
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
-## 部署
+## 手动部署
 
-运行环境：`Node.js >= v8.0.0`  
+运行环境要求：`Node.js >= v8.0.0`  
 安装：
 ```
 git clone https://github.com/zgq354/weibo-rss.git
 cd weibo-rss
 npm install
 ```
-启动：  
+启动：
 ```
 npm install pm2 -g
 pm2 start bin/www
@@ -31,10 +31,10 @@ pm2 start bin/www
 
 1. Add Heroku Button by @huan
 
-## 作者
-
+## 相关链接
 1. [更好地使用 RSS 订阅喜欢的微博博主](https://blog.izgq.net/archives/877/)
-1. @[huan](https://github.com/huan)
+2. @[huan](https://github.com/huan)
+3. [RSSHub](https://github.com/DIYgod/RSSHub)
 
 ## 赞助
 

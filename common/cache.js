@@ -35,6 +35,7 @@ schedule.scheduleJob("0 30 2 * * *", function () {
 });
 
 module.exports.set = function (key, value, expire) {
+  logger.debug(`cache: set ${key}`);
   return new Promise(function(resolve, reject) {
     // 缓存数据，包括缓存时间的设定
     var data = {

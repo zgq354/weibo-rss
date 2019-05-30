@@ -49,6 +49,9 @@ async function getWeiboRSS(ctx) {
     if (!/^[0-9]{10}$/.test(uid)) {
       throw 'Invalid Format';
     }
+    if (await cache.get(`nouser-${uid}`)) {
+      throw 'user_not_found';
+    }
     // start
     let startTime = Date.now();
     let hitCache = 0;
@@ -59,9 +62,15 @@ async function getWeiboRSS(ctx) {
         return result;
       } else {
         // fetch
-        return weibo.fetchRSS(uid, options).then(function (data) {
-          cache.set(key, data, config.TTL * 60);
-          return data;
+        return weibo.fetchRSS(uid, options).then(function ({ userNotExist, requestSuccess, resultXML }) {
+          if (userNotExist) {
+            cache.set(`nouser-${uid}`, true, 7200);
+            return Promise.reject('user_not_found');
+          } else if (!requestSuccess) {
+            return Promise.reject('some error');
+          }
+          cache.set(key, resultXML, config.TTL * 60);
+          return resultXML;
         });
       }
     });
@@ -71,6 +80,7 @@ async function getWeiboRSS(ctx) {
     ctx.body = rssData;
   } catch (error) {
     logger.error(`${error} - uid: ${uid} - IP: ${ip}`);
+    logger.error(error.stack);
     if (error === "user_not_found") {
       ctx.status = 404;
       ctx.body = 'User Not Found';

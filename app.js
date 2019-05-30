@@ -20,7 +20,7 @@ app.use(async (ctx, next) => {
 app.use(serve(__dirname + '/public'));
 app.use(router.routes());
 
-app.start = function (port = 3000) {
+app.start = function (port) {
   app.listen(port, function () {
     logger.info(`weibo-rss start`);
     logger.info(`Listening Port ${port}`);

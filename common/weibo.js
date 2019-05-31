@@ -47,7 +47,7 @@ exports.fetchRSS = async function (uid, options) {
   if (weiboData) {
     // metadata
     var feed = new RSS({
-      site_url: "https://weibo.com/" + weiboData.user.id,
+      site_url: "https://weibo.com/" + uid,
       title: weiboData.user.screen_name + '的微博',
       description: weiboData.user.description,
       generator: 'https://github.com/zgq354/weibo-rss',
@@ -59,8 +59,8 @@ exports.fetchRSS = async function (uid, options) {
       feed.item({
         title: detail.status_title || (detail.text ? detail.text.replace(/<[^>]+>/g, '').replace(/[\n]/g, '').substr(0, 25) : null),
         description: utils.formatStatus(detail, options.largePic, options.emoji),
-        url: 'https://weibo.com/' + weiboData.user.id + '/' + detail.bid,
-        guid: 'https://weibo.com/' + weiboData.user.id + '/' + detail.bid,
+        url: 'https://weibo.com/' + uid + '/' + detail.bid,
+        guid: 'https://weibo.com/' + uid + '/' + detail.bid,
         date: new Date(detail.created_at)
       });
     });
@@ -94,7 +94,7 @@ async function getWeiboData(uid) {
   let resultList = [];
   let tempResultObject = await getByIndexAPI(uid);
   resultList.push(tempResultObject);
-  if (tempResultObject.userNotExist) {
+  if (!tempResultObject.requestSuccess || tempResultObject.userNotExist) {
     tempResultObject = await getByProfileInfo(uid);
     resultList.push(tempResultObject);
   }

@@ -1,8 +1,8 @@
 
 const Koa = require('koa');
 const serve = require('koa-static');
-const router = require('./routes');
-const logger = require('./common/logger');
+const router = require('./core/router');
+const logger = require('./core/logger');
 
 const app = new Koa();
 

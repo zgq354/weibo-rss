@@ -1,9 +1,9 @@
 const Router = require('koa-router');
 const router = new Router();
-const cache = require('./common/cache');
-const weibo = require('./common/weibo');
-const logger = require('./common/logger');
-const config = require('./config');
+const cache = require('./cache');
+const weibo = require('./weibo');
+const logger = require('./logger');
+const config = require('../config');
 
 router.get('/convert', convertDomain);
 router.get('/rss/:id', getWeiboRSS);

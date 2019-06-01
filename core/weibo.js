@@ -103,7 +103,7 @@ exports.getUIDByDomain = function (domain) {
 };
 
 /**
- * 获取最近发的微博的
+ * 获取最近发的微博
  */
 async function getWeiboData(uid) {
   let resultList = [];

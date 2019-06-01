@@ -1,0 +1,10 @@
+{
+  "apps": [{
+    "name": "weibo-rss",
+    "script": "./bin/www",
+    "watch": true,
+    "env": {
+      "PORT": "3000"
+    }
+  }]
+}

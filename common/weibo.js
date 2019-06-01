@@ -77,13 +77,28 @@ exports.fetchRSS = async function (uid, options) {
 // 通过用户的个性域名获取UID
 exports.getUIDByDomain = function (domain) {
   // 利用手机版的跳转获取
-  return axiosInstance.get('https://weibo.com/' + domain, {
+  return axiosInstance.get(`https://m.weibo.cn/${domain}?&jumpfrom=weibocom`, {
     headers: {
       'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'
+    },
+    maxRedirects: 0,
+  }).then(res => {
+    // fake 404
+    return Promise.reject(new Error('User Not Exist'));
+  }).catch(err => {
+    if (err.response) {
+      if (err.response.status === 302) {
+        const uid = err.response.headers.location.split("/u/")[1];
+        return {
+          uid
+        };
+      } else if (err.response.status === 404) {
+        return {
+          notFound: true,
+        };
+      }
     }
-  }).then(function (data) {
-    const uid = data.request.path.split("/u/")[1];
-    return uid;
+    return Promise.reject(err);
   });
 };
 

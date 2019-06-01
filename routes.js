@@ -17,11 +17,19 @@ async function convertDomain(ctx) {
       throw new Error('Invalid domain');
     }
     // start fetching
-    const uid = await weibo.getUIDByDomain(domain);
-    ctx.body = {
-      success: true,
-      uid
-    };
+    const { notFound, uid } = await weibo.getUIDByDomain(domain);
+    logger.debug(`domain: ${domain}, uid: ${uid}`);
+    if (!notFound) {
+      ctx.body = {
+        success: true,
+        uid
+      };
+    } else {
+      ctx.body = {
+        success: false,
+        msg: '找不到微博，可能是地址格式不正确',
+      }
+    }
   } catch (error) {
     logger.error(error);
     ctx.body = {
@@ -67,7 +75,7 @@ async function getWeiboRSS(ctx) {
             cache.set(`nouser-${uid}`, true, 7200);
             return Promise.reject('user_not_found');
           } else if (!requestSuccess) {
-            return Promise.reject('some error');
+            return Promise.reject('request weibo failed');
           }
           cache.set(key, resultXML, config.TTL * 60);
           return resultXML;
@@ -80,7 +88,7 @@ async function getWeiboRSS(ctx) {
     ctx.body = rssData;
   } catch (error) {
     logger.error(`${error} - uid: ${uid} - IP: ${ip}`);
-    logger.error(error.stack);
+    if (error.stack) logger.error(error.stack);
     if (error === "user_not_found") {
       ctx.status = 404;
       ctx.body = 'User Not Found';

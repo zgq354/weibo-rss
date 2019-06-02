@@ -118,7 +118,17 @@ async function getWeiboData(uid) {
   let weiboData;
   let userNotExist = resultList.every(item => item.userNotExist);
   let requestSuccess = resultList.some(item => item.requestSuccess);
-  if (!userNotExist) {
+
+  // backup cache
+  let cacheWeiboData = await cache.get(`wbdata-${uid}`);
+  if (!requestSuccess && !tempResultObject.weiboData && cacheWeiboData) {
+    logger.info(`bkcache-${uid}`);
+    tempResultObject.weiboData = cacheWeiboData;
+  } else if (!tempResultObject.userNotExist) {
+    cache.set(`wbdata-${uid}`, tempResultObject.weiboData, 86400000);
+  }
+
+  if (!tempResultObject.userNotExist) {
     weiboData = await handleLongText(tempResultObject.weiboData);
   }
 

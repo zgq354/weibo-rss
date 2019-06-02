@@ -124,7 +124,8 @@ async function getWeiboData(uid) {
   if (!requestSuccess && !tempResultObject.weiboData && cacheWeiboData) {
     logger.info(`bkcache-${uid}`);
     tempResultObject.weiboData = cacheWeiboData;
-  } else if (!tempResultObject.userNotExist) {
+    requestSuccess = true;
+  } else if (requestSuccess && !tempResultObject.userNotExist) {
     cache.set(`wbdata-${uid}`, tempResultObject.weiboData, 86400000);
   }
 

@@ -4,8 +4,6 @@
 支持长微博、所有配图、链接的完整输出。  
 致力于一目了然的微博阅读体验。  
 
-[测试预览](https://api.izgq.net/weibo/)
-
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
 ## 手动部署
@@ -25,16 +23,9 @@ pm2 start bin/www
 
 更多配置参考 [项目Wiki](https://github.com/zgq354/weibo-rss/wiki)  
 
-## 历史记录
 
-### Apr 2019
-
-1. Add Heroku Button by @huan
-
-## 相关链接
-1. [更好地使用 RSS 订阅喜欢的微博博主](https://blog.izgq.net/archives/877/)
-2. @[huan](https://github.com/huan)
-3. [RSSHub](https://github.com/DIYgod/RSSHub)
+## 相关项目
+1. [RSSHub](https://github.com/DIYgod/RSSHub)
 
 ## 赞助
 

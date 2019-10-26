@@ -1,6 +1,6 @@
 /**
-* Created by qing on 17-10-2.
-*/
+ * Created by qing on 17-10-2.
+ */
 var path = require('path');
 var logger = require('./logger');
 var levelup = require('levelup');

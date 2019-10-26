@@ -80,47 +80,50 @@ exports.revertRelativeDate = (html, timeZone = -serverOffset) => {
   return html;
 };
 
-// 生成每条微博的HTML
+// 生成每条微博的 HTML
 exports.formatStatus = (status, largePic = true, emoji = false) => {
-  // 长文章处理
-  var temp = status.longText ? status.longText.longTextContent.replace(/\n/g, '<br>') : status.text;
+  const { longTextContent, url_objects: URLObjects } = status.longText || {};
   // 某些纯图片微博 status.text 的值为 null
-  if (!temp) temp = "";
+  let tempHTML = (longTextContent ? longTextContent.replace(/\n/g, '<br>') : status.text) || "";
 
   if (!emoji) {
-    // 表情图标转换为文字
-    temp = temp.replace(/<span class="url-icon"><img alt="(.*?)" src=".*?" style="width:1em; height:1em;"\/><\/span>/g, '$1');
-    // 去掉外部链接的图标
-    temp = temp.replace(/<span class='url-icon'><img.*?><\/span>/g, '');
+    // 表情转文字
+    tempHTML = tempHTML.replace(/<span class="url-icon"><img alt="?(.*?)"? src=".*?" style="width:1em; height:1em;".*?\/><\/span>/g, '$1');
+    // 去掉外链图标
+    tempHTML = tempHTML.replace(/<span class='url-icon'><img.*?><\/span>/g, '');
   }
 
-  // 处理外部链接
-  temp = temp.replace(/https:\/\/weibo\.cn\/sinaurl\/.*?&u=(http.*?\")/g, function (match, p1) {
-    return decodeURIComponent(p1);
+  // 外部链接
+  URLObjects && URLObjects.forEach(urlObj => {
+    const { url_short, url_long } = urlObj.info || {};
+    if (url_short) {
+      tempHTML = tempHTML.replace(new RegExp(url_short, 'g'), url_long);
+    }
   });
 
-  // 处理转发的微博
+  // 转发的微博
   if (status.retweeted_status) {
-    temp += "<br><br>";
+    tempHTML += "<br><br>";
     // 可能有转发的微博被删除的情况
     if (status.retweeted_status.user) {
-      temp += '<div style="border-left: 3px solid gray; padding-left: 1em;">' +
+      tempHTML += '<div style="border-left: 3px solid gray; padding-left: 1em;">' +
         '转发 <a href="https://weibo.com/' + status.retweeted_status.user.id + '" target="_blank">@' + status.retweeted_status.user.screen_name + '</a>: ' +
         exports.formatStatus(status.retweeted_status, largePic, emoji) +
         '</div>';
     }
   }
-  // 添加微博配图
+
+  // 微博配图
   if (status.pics) {
     status.pics.forEach(function (item) {
-      temp += "<br><br>";
-      temp += '<a href="' + item.large.url + '" target="_blank"><img src="' + (largePic ? item.large.url : item.url) + '"></a>';
+      tempHTML += "<br><br>";
+      tempHTML += '<a href="' + item.large.url + '" target="_blank"><img src="' + (largePic ? item.large.url : item.url) + '"></a>';
     });
   }
-  return temp;
+  return tempHTML;
 };
 
-// 返回一个执行后返回延时 resolve Promise 的函数
+// sleep
 exports.delayFunc = (ms) => () => {
   return new Promise(resolve => {
     setTimeout(resolve, ms);

@@ -1,6 +1,6 @@
 /**
-* Created by qing on 17-10-1.
-*/
+ * Created by qing on 17-10-1.
+ */
 const axios = require('axios');
 const RSS = require('rss');
 const Queue = require('np-queue');

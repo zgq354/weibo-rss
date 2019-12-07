@@ -3,6 +3,7 @@ version: '2'
 services:
   weibo-rss:
     build: .
+    container_name: docker-weibo-rss
     restart: always
     ports:
       - "3000:3000"

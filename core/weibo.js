@@ -75,20 +75,34 @@ exports.fetchRSS = async function (uid, options) {
 };
 
 // 通过用户的个性域名获取UID
-exports.getUIDByDomain = function (domain) {
-  // 利用手机版的跳转获取
-  return axios.get(`https://m.weibo.cn/${domain}?&jumpfrom=weibocom`, {
-    timeout: 3000,
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'
-    },
-  }).then(res => {
-    const uid = res.request.path.split("/u/")[1];
+exports.getUIDByDomain = async function (domain) {
+  const uidObj = await cache.get(`uid-${domain}`);
+  if (uidObj) {
+    const { uid } = uidObj;
     return {
       uid,
       notFound: !uid,
     };
-  });
+  } else {
+    return axios.get(`https://m.overseas.weibo.com/user/${domain}`, {
+      timeout: 3000,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A356 Safari/604.1'
+      },
+    }).then(res => {
+      const { data } = res;
+      const match = data.match(/var sUID = '(\d+)';/) || {};
+      const uid = match[1] || false;
+
+      // cache
+      cache.set(`uid-${domain}`, { uid }, 7200);
+
+      return {
+        uid,
+        notFound: !uid,
+      };
+    });
+  }
 };
 
 /**

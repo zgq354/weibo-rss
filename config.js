@@ -1,9 +1,9 @@
 /**
- * config.js
+ * 程序初始化配置
  */
-
 const config = {
-  TTL: 15, // 微博缓存时间（分钟）
+  port: 3000, // 也可以在环境变量指定
+  TTL: 15,
 };
 
 module.exports = config;

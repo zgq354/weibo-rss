@@ -46,4 +46,4 @@ fabric.properties
 
 /data/*
 !/data/.gitkeep
-package-lock.json
+/dist/

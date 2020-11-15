@@ -20,6 +20,16 @@ if (existsSync(`${rootDir}/config.js`)) {
 const defaultConfig = {
   port: 3000, // 也可以在环境变量指定
   TTL: 15, // 微博加载延迟
+  cache: { // 缓存配置
+    NOT_FOUND: {
+      prefix: 'nouser',
+      ttl: 2 * 3600,
+    },
+    RSSXML: { // RSSXML缓存
+      prefix: 'rssxml',
+      ttl: 72 * 3600,
+    },
+  },
 };
 
 /**

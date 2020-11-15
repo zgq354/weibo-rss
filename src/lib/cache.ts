@@ -123,3 +123,8 @@ scheduleJob("0 30 2 * * *", () => {
       );
     });
 });
+
+export default {
+  set,
+  get,
+};

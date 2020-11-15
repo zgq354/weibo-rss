@@ -2,6 +2,11 @@
 # yarn lockfile v1
 
 
+"@types/abstract-leveldown@*":
+  version "5.0.1"
+  resolved "https://registry.npm.taobao.org/@types/abstract-leveldown/download/@types/abstract-leveldown-5.0.1.tgz#3c7750d0186b954c7f2d2f6acc8c3c7ba0c3412e"
+  integrity sha1-PHdQ0BhrlUx/LS9qzIw8e6DDQS4=
+
 "@types/accepts@*":
   version "1.3.5"
   resolved "https://registry.npm.taobao.org/@types/accepts/download/@types/accepts-1.3.5.tgz#c34bec115cfc746e04fe5a059df4ce7e7b391575"
@@ -116,10 +121,33 @@
     "@types/koa-compose" "*"
     "@types/node" "*"
 
+"@types/leveldown@^4.0.2":
+  version "4.0.2"
+  resolved "https://registry.npm.taobao.org/@types/leveldown/download/@types/leveldown-4.0.2.tgz#edb44a33668ae58656721bb1852345e6a2f2e42a"
+  integrity sha1-7bRKM2aK5YZWchuxhSNF5qLy5Co=
+  dependencies:
+    "@types/abstract-leveldown" "*"
+    "@types/node" "*"
+
+"@types/levelup@^4.3.0":
+  version "4.3.0"
+  resolved "https://registry.npm.taobao.org/@types/levelup/download/@types/levelup-4.3.0.tgz#4f55585e05a33caa08c1439c344bbba93e947327"
+  integrity sha1-T1VYXgWjPKoIwUOcNEu7qT6Ucyc=
+  dependencies:
+    "@types/abstract-leveldown" "*"
+    "@types/node" "*"
+
 "@types/mime@*":
   version "2.0.3"
   resolved "https://registry.npm.taobao.org/@types/mime/download/@types/mime-2.0.3.tgz?cache=0&sync_timestamp=1605054613280&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40types%2Fmime%2Fdownload%2F%40types%2Fmime-2.0.3.tgz#c893b73721db73699943bfc3653b1deb7faa4a3a"
   integrity sha1-yJO3NyHbc2mZQ7/DZTsd63+qSjo=
+
+"@types/node-schedule@^1.3.1":
+  version "1.3.1"
+  resolved "https://registry.npm.taobao.org/@types/node-schedule/download/@types/node-schedule-1.3.1.tgz?cache=0&sync_timestamp=1605061772781&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40types%2Fnode-schedule%2Fdownload%2F%40types%2Fnode-schedule-1.3.1.tgz#6785ea71b12b0b8899c3fce0650b2ef5a7ea9d1e"
+  integrity sha1-Z4XqcbErC4iZw/zgZQsu9afqnR4=
+  dependencies:
+    "@types/node" "*"
 
 "@types/node@*", "@types/node@^14.14.7":
   version "14.14.7"
@@ -853,10 +881,10 @@ level-supports@~1.0.0:
   dependencies:
     xtend "^4.0.2"
 
-level@^6.0.0:
+level@^6.0.1:
   version "6.0.1"
-  resolved "https://registry.yarnpkg.com/level/-/level-6.0.1.tgz#dc34c5edb81846a6de5079eac15706334b0d7cd6"
-  integrity sha512-psRSqJZCsC/irNhfHzrVZbmPYXDcEYhA5TVNwr+V92jF44rbf86hqGp8fiT702FyiArScYIlPSBTDUASCVNSpw==
+  resolved "https://registry.npm.taobao.org/level/download/level-6.0.1.tgz#dc34c5edb81846a6de5079eac15706334b0d7cd6"
+  integrity sha1-3DTF7bgYRqbeUHnqwVcGM0sNfNY=
   dependencies:
     level-js "^5.0.0"
     level-packager "^5.1.0"

@@ -47,3 +47,4 @@ fabric.properties
 /data/*
 !/data/.gitkeep
 /dist/
+yarn-error.log

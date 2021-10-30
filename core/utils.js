@@ -117,7 +117,7 @@ exports.formatStatus = (status, largePic = true, emoji = false) => {
   if (status.pics) {
     status.pics.forEach(function (item) {
       tempHTML += "<br><br>";
-      tempHTML += '<a href="' + item.large.url + '" target="_blank"><img src="' + (largePic ? item.large.url : item.url) + '"></a>';
+      tempHTML += '<a href="' + item.large.url + '" target="_blank"><img src="' + (largePic ? item.large.url : item.url) + '" referrerpolicy="no-referrer"></a>';
     });
   }
   return tempHTML;

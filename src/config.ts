@@ -2,7 +2,7 @@
  * 配置文件加载相关
  */
 import { existsSync } from "fs";
-import { logger } from "./lib/logger";
+import { logger } from "./modules/logger";
 
 const rootDir = `${__dirname}/../`;
 let customConfig = {};

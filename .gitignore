@@ -48,3 +48,5 @@ fabric.properties
 !/data/.gitkeep
 /dist/
 yarn-error.log
+
+.DS_Store

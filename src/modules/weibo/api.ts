@@ -121,7 +121,7 @@ export const createLongTextAPI = () => {
           'X-Requested-With': 'XMLHttpRequest'
         },
       }).then(({ data }) => {
-        return data.data?.longTextContent;
+        return data.data.longTextContent;
       }).catch(err => handleForbiddenErr(err, disable));
     }),
   };

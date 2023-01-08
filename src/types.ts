@@ -60,6 +60,7 @@ export interface WeiboStatus {
     // more...
     [x: string]: any;
   };
+  retweeted_status?: WeiboStatus;
   [x: string]: any;
 }
 

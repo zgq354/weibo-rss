@@ -1,8 +1,5 @@
-/**
- * 处理终端传来的端口号
- * @param val 端口号字符串
- */
-export const normalizePort = (val) => {
+
+export const normalizePort = (val: string) => {
   const port = parseInt(val, 10);
   if (isNaN(port)) {
     // named pipe

@@ -1,6 +1,3 @@
-/**
- * 程序入口
- */
 import Koa from 'koa';
 import Router from '@koa/router';
 import serve from 'koa-static';

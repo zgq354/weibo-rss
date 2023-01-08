@@ -19,7 +19,7 @@ if (existsSync(`${rootDir}/config.js`)) {
 // 默认配置
 const defaultConfig = {
   // 程序监听的 TCP 端口，也可以在环境变量指定
-  port: 3000,
+  port: '3000',
   // 输出 rss feed 文本的 ttl 字段（分钟为单位）
   rssTTL: 15,
   // 真正的缓存配置，具体关注代码（秒为单位）

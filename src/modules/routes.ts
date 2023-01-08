@@ -6,12 +6,20 @@ import NodeRSS from 'rss';
 import { RSSKoaContext, RSSKoaState } from '../types';
 import config from '../config';
 import { statusToHTML } from './weibo/weibo';
-import { UserNotFoundError } from './weibo/api';
+import { DomainNotFoundError, UserNotFoundError } from './weibo/api';
 import { ThrottledError } from './throttler';
+import { logger } from './logger';
 
 export class UidInvalidError extends Error {
   constructor(uid: string) {
     super(`uid: ${uid}`);
+    this.name = this.constructor.name;
+  }
+}
+
+export class DomainInvalidError extends Error {
+  constructor(domain: string) {
+    super(`domain: ${domain}`);
     this.name = this.constructor.name;
   }
 }
@@ -83,4 +91,51 @@ export const registerRoutes = (
       }
     }
   });
+
+  router.get('/api/domain2uid', async (ctx) => {
+    const domain = ctx.request.query['domain'] as string;
+    try {
+      // verify
+      if (!domain || !/^[A-Za-z0-9]{3,20}$/.test(domain)) {
+        throw new DomainInvalidError(domain);
+      }
+      // start fetching
+      let cacheMiss = false;
+      const uid = await ctx.cache.memo(
+        () => {
+          cacheMiss = true;
+          return ctx.weibo.getUIDByDomain(domain);
+        },
+        `dm-${domain}`,
+        config.cacheTTL.apiDomain,
+      );
+      logger.debug(`domain: ${domain}, uid: ${uid}`);
+      ctx.body = {
+        success: true,
+        uid
+      };
+
+      // mark hit cache
+      ctx.state.hit = cacheMiss ? 0 : 1;
+    } catch (error) {
+      switch (error?.name) {
+        case DomainInvalidError.name:
+        case DomainNotFoundError.name:
+          ctx.status = 404;
+          ctx.body = {
+            success: false,
+            msg: '找不到微博，可能是地址格式不正确',
+          };
+          return;
+        default:
+          logger.error(error);
+          ctx.status = 500;
+          ctx.body = {
+            success: false,
+            msg: '获取数据时发生了错误'
+          };
+          break;
+      }
+    }
+  })
 };

@@ -5,7 +5,7 @@
   <meta name="renderer" content="webkit" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <title>新浪微博RSS订阅</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/bootstrap.min.css">
   <link rel="shortcut icon" href="favicon.ico"/>
   <style>
   .content {
@@ -44,30 +44,25 @@
         <div class="head">
           <h2 class="text-center">Weibo to RSS</h2>
           <p class="intro">优雅地使用 RSS 阅读器订阅喜欢的微博博主</p>
-          <p>食用方式：<br>1. 在输入框中粘贴你想订阅的微博地址<br>2. 点击“订阅”按钮</p>
+          <p>食用方式：<br>1. 在输入框中粘贴你想订阅的微博地址<br>2. 点击“生成订阅源”按钮</p>
           <form id="form">
             <div class="input-group">
               <input id="text-input" type="text" class="form-control" placeholder="https://weibo.com/kaifulee">
               <span class="input-group-btn">
-                <button class="btn btn-default">订阅</button>
+                <button class="btn btn-default">生成订阅源</button>
               </span>
             </div>
           </form>
         </div>
         <div class="loading" style="display: none;"><p class="text-center">加载中...</p></div>
         <div class="result" style="display: none;">
-          <p>RSS地址：</p>
+          <p>经本服务转换生成的RSS订阅源地址：</p>
           <div class="input-group">
             <input id="foo" type="text" class="form-control" value="">
             <span class="input-group-btn">
-              <button id="copy-btn" data-clipboard-action="copy" data-clipboard-target="#foo" class="btn btn-default">复制到剪切板</button>
+              <button id="copy-btn" data-clipboard-action="copy" data-clipboard-target="#foo" class="btn btn-default">复制到剪贴板</button>
             </span>
           </div>
-          <ul class="reader-list">
-            <li><a id="inoreader" href="" target="_blank">订阅到Inoreader</a></li>
-            <li><a id="feedly" href="" target="_blank">订阅到Feedly</a></li>
-            <li><a id="theoldreader" href="" target="_blank">订阅到TheOldReader</a></li>
-          </ul>
         </div>
       </div>
     </div>
@@ -84,7 +79,6 @@
 var prefix = {
   inoreader: "https://www.inoreader.com/?add_feed=",
   feedly: "https://cloud.feedly.com/#subscription/feed/",
-  theoldreader: "https://theoldreader.com/feeds/subscribe?url="
 };
 
 // 初始化Clipboard插件
@@ -109,7 +103,7 @@ $('#form').on('submit', function (e) {
     if (!temp) {
       showResult(false);
     } else {
-      $.get("convert?domain=" + temp[3], function (data) {
+      $.get("api/domain2uid?domain=" + temp[3], function (data) {
         showResult(data.uid);
       }).fail(function (err) {
         showResult(false);

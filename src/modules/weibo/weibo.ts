@@ -1,7 +1,7 @@
 import config from "../../config";
 import { CacheInterface, LoggerInterface, WeiboStatus, WeiboUserData } from "../../types";
 import { logger } from "../logger";
-import { createDetailAPI, createIndexAPI, createLongTextAPI } from "./api";
+import { createDetailAPI, createDomainAPI, createIndexAPI, createLongTextAPI } from "./api";
 
 export class WeiboData {
   cache: CacheInterface;
@@ -10,17 +10,20 @@ export class WeiboData {
   getWeiboContentList: ReturnType<typeof createIndexAPI>['getWeiboContentList'];
   getWeiboDetail: ReturnType<typeof createDetailAPI>['getWeiboDetail'];
   getWeiboLongText: ReturnType<typeof createLongTextAPI>['getWeiboLongText'];
+  getUIDByDomain: ReturnType<typeof createDomainAPI>['getUIDByDomain'];
 
   constructor(cache: CacheInterface, log: LoggerInterface = logger) {
     this.cache = cache;
-    this.logger = logger;
+    this.logger = log;
     const { getIndexUserInfo, getWeiboContentList } = createIndexAPI();
     const { getWeiboDetail } = createDetailAPI();
     const { getWeiboLongText } = createLongTextAPI();
+    const { getUIDByDomain } = createDomainAPI();
     this.getIndexUserInfo = getIndexUserInfo;
     this.getWeiboContentList = getWeiboContentList;
     this.getWeiboDetail = getWeiboDetail;
     this.getWeiboLongText = getWeiboLongText;
+    this.getUIDByDomain = getUIDByDomain;
   }
 
   /**
@@ -81,6 +84,11 @@ export class WeiboData {
     }
     return newStatus;
   };
+
+  /**
+   * domain -> uid
+   */
+  fetchUIDByDomain = async (domain: string) => this.getUIDByDomain(domain);
 }
 
 export const statusToHTML = (status: WeiboStatus) => {

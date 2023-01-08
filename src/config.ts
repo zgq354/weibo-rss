@@ -22,13 +22,14 @@ const defaultConfig = {
   port: 3000,
   // 输出 rss feed 文本的 ttl 字段（分钟为单位）
   rssTTL: 15,
-  // 真正的缓存配置（秒为单位，具体关注代码）
+  // 真正的缓存配置，具体关注代码（秒为单位）
   cacheTTL: {
     rssXml: 15 * 60,
     apiStatusList: 15 * 60,
     apiIndexInfo: 3 * 24 * 60 * 60,
     apiLongText: 7 * 24 * 60 * 60,
     apiDetail: 7 * 24 * 60 * 60,
+    apiDomain: 7 * 24 * 60 * 60,
   },
 };
 

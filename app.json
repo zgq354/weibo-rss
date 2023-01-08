@@ -7,7 +7,7 @@
     "weibo",
     "rss"
   ],
-  "website": "https://blog.izgq.net/archives/877/",
+  "website": "https://zgq.ink/posts/weibo-rss",
   "success_url": "/",
   "env": {
     "EXAMPLE": {

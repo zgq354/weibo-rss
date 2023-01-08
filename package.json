@@ -1,12 +1,12 @@
 {
   "name": "weibo-rss",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www",
-    "c": "tsc",
-    "serve": "ts-node src/index.ts",
-    "dev": "cross-env DEBUG=1 ts-node-dev src/index.ts"
+    "build": "tsc",
+    "start": "ts-node src/app.ts",
+    "serve": "node dist/app.js",
+    "dev": "cross-env DEBUG=1 ts-node-dev src/app.ts"
   },
   "dependencies": {
     "@koa/router": "^12.0.0",

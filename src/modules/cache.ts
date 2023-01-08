@@ -2,7 +2,8 @@ import LevelDOWN from "leveldown";
 import levelUp, { LevelUp } from "levelup";
 import { scheduleJob } from "node-schedule";
 import path from "path";
-import { LoggerInterface } from "../types";
+import { CacheInterface, LoggerInterface } from "../types";
+import { logger } from "./logger";
 
 // 缓存条目的结构
 export interface CacheObject {
@@ -23,7 +24,7 @@ const DB_FOLDER = 'rss-data';
 /**
  * LevelDB 实现的文件系统缓存
  */
-export class LevelCache {
+export class LevelCache implements CacheInterface {
   private instance: LevelUp;
   private logger: LoggerInterface;
 
@@ -35,9 +36,9 @@ export class LevelCache {
 
   static instance: LevelCache = null;
 
-  static getInstance(dataBaseDir: string, logger: LoggerInterface) {
+  static getInstance(dataBaseDir: string, log: LoggerInterface = logger) {
     if (!LevelCache.instance) {
-      LevelCache.instance = new LevelCache(path.join(dataBaseDir, DB_FOLDER), logger);
+      LevelCache.instance = new LevelCache(path.join(dataBaseDir, DB_FOLDER), log);
     }
     return LevelCache.instance;
   }
@@ -50,7 +51,7 @@ export class LevelCache {
    */
   set(key: string, value: any, expire: number = 0) {
     this.logger.debug(`[cache] set ${key}`);
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       const data: CacheObject = {
         created: Date.now(),
         expire: !!expire,
@@ -61,7 +62,7 @@ export class LevelCache {
       }
       this.instance.put(key, JSON.stringify(data), (err) => {
         if (err) return reject(err);
-        return resolve(true);
+        return resolve();
       });
     });
   }

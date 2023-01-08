@@ -31,7 +31,6 @@ export class LevelCache implements CacheInterface {
   constructor(dbPath: string, logger: LoggerInterface) {
     this.instance = levelUp(LevelDOWN(dbPath));
     this.logger = logger;
-    this.startScheduleCleanJob();
   }
 
   static instance: LevelCache = null;
@@ -76,7 +75,7 @@ export class LevelCache implements CacheInterface {
       this.instance.get(key, (err: NotFoundError, value) => {
         if (err) {
           if (err.notFound) {
-            this.logger.debug(`[cache] get ${key} not found`);
+            this.logger.debug(`[cache] get ${key} notFound`);
             return resolve(null);
           }
           this.logger.error(`[cache] get ${key} error`, err);
@@ -85,9 +84,11 @@ export class LevelCache implements CacheInterface {
         try {
           const data = JSON.parse(String(value)) as CacheObject;
           if (this.checkExpired(data)) {
+            this.logger.debug(`[cache] get ${key} expired`);
             // 过期缓存交给定时任务清理
             return resolve(null);
           } else {
+            this.logger.debug(`[cache] get ${key}`);
             return resolve(data.value);
           }
         } catch (error) {
@@ -96,6 +97,19 @@ export class LevelCache implements CacheInterface {
         }
       });
     });
+  }
+
+  /**
+   * memo in cache
+   */
+  async memo<T>(cb: () => T, key: string, expire = 0): Promise<Awaited<T>> {
+    const cacheResp = await this.get(key);
+    if (cacheResp) {
+      return cacheResp as Awaited<T>;
+    }
+    const res = await cb();
+    this.set(key, res, expire);
+    return res;
   }
 
   /**

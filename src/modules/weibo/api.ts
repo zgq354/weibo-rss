@@ -2,6 +2,7 @@ import Axios, { AxiosError } from "axios";
 import { Agent } from "https";
 import { WeiboStatus, WeiboUserData } from "../../types";
 import { waitMs } from "../../utils";
+import { logger } from "../logger";
 import { Throttler } from "../throttler";
 
 export const TIME_OUT = 3000;
@@ -32,6 +33,7 @@ export const createIndexAPI = () => {
 
   return {
     getIndexUserInfo: (uid: string) => runner.runFunc<WeiboUserData>(async (disable) => {
+      logger.debug(`[getInfo] ${uid}`);
       await waitMs(Math.floor(Math.random() * 100));
       return await axiosInstance({
         method: 'get',
@@ -56,6 +58,7 @@ export const createIndexAPI = () => {
       }).catch(err => handleForbiddenErr(err, disable));
     }),
     getWeiboContentList: (uid: string, containerId: string) => runner.runFunc<WeiboStatus[]>(async (disable) => {
+      logger.debug(`[getContList] ${uid} ${containerId}`);
       await waitMs(Math.floor(Math.random() * 100));
       return await axiosInstance({
         method: 'get',
@@ -84,6 +87,7 @@ export const createDetailAPI = () => {
   });
   return {
     getWeiboDetail: (id: string) => runner.runFunc(async (disable) => {
+      logger.debug(`[getDetail] ${id}`);
       await waitMs(Math.floor(Math.random() * 100));
       return await axiosInstance({
         method: 'get',
@@ -110,6 +114,7 @@ export const createLongTextAPI = () => {
   });
   return {
     getWeiboLongText: (id: string) => runner.runFunc<string>(async (disable) => {
+      logger.debug(`[longText] ${id}`);
       await waitMs(Math.floor(Math.random() * 100));
       return await axiosInstance({
         method: 'get',

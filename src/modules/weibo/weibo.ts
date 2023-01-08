@@ -1,3 +1,4 @@
+import config from "../../config";
 import { CacheInterface, LoggerInterface, WeiboStatus, WeiboUserData } from "../../types";
 import { logger } from "../logger";
 import { createDetailAPI, createIndexAPI, createLongTextAPI } from "./api";
@@ -26,14 +27,14 @@ export class WeiboData {
    * get user's weibo
    */
   fetchUserLatestWeibo = async (uid: string) => {
-    const indexInfo = await this.cacheMemo(() => this.getIndexUserInfo(uid), `info-${uid}`, 3 * 24 * 60 * 60);
+    const indexInfo = await this.cache.memo(() => this.getIndexUserInfo(uid), `info-${uid}`, config.cacheTTL.apiIndexInfo);
     const { containerId } = indexInfo;
-    const statusList = await this.cacheMemo(async () => {
+    const statusList = await this.cache.memo(async () => {
       const wbList = await this.getWeiboContentList(uid, containerId);
       return await Promise.all(
         wbList.map(status => this.fillStatusWithLongText(status))
       );
-    }, `list-${uid}`, 15 * 60);
+    }, `list-${uid}`, config.cacheTTL.apiStatusList);
 
     return {
       ...indexInfo,
@@ -49,10 +50,10 @@ export class WeiboData {
     try {
       if (status.isLongText) {
         try {
-          const longTextContent = await this.cacheMemo(
+          const longTextContent = await this.cache.memo(
             () => this.getWeiboLongText(status.id),
             `long-${status.id}`,
-            7 * 24 * 60 * 60,
+            config.cacheTTL.apiLongText,
           );
           newStatus = {
             ...status,
@@ -61,10 +62,10 @@ export class WeiboData {
         } catch (error) {
           logger.error(error);
           // fallback to detail
-          newStatus = await this.cacheMemo(
+          newStatus = await this.cache.memo(
             () => this.getWeiboDetail(status.id),
             `dt-${status.id}`,
-            7 * 24 * 60 * 60,
+            config.cacheTTL.apiDetail,
           );
         }
       }
@@ -80,19 +81,6 @@ export class WeiboData {
     }
     return newStatus;
   };
-
-  /**
-   * memo in cache
-   */
-  private cacheMemo = async <T>(cb: () => T, key: string, expire = 0): Promise<Awaited<T>> => {
-    const cacheResp = await this.cache.get(key);
-    if (cacheResp) {
-      return cacheResp as Awaited<T>;
-    }
-    const res = await cb();
-    this.cache.set(key, res, expire);
-    return res;
-  }
 }
 
 export const statusToHTML = (status: WeiboStatus) => {

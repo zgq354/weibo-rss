@@ -5,12 +5,11 @@ import { WeiboData } from "./weibo";
 
 (async () => {
   const wbData = new WeiboData({
-    set: async (key) => console.log(key),
+    set: async () => null,
     get: async () => null,
+    memo: async <T>(cb: () => T): Promise<Awaited<T>> => await cb(),
   });
 
-  // const data = await wbData.fetchUserLatestWeibo('5890672121');
-  // const data = await wbData.fetchUserLatestWeibo('7309016789');
-  const data = await wbData.fetchUserLatestWeibo('73090167890');
+  const data = await wbData.fetchUserLatestWeibo('5890672121');
   console.log(data);
 })();

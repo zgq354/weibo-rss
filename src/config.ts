@@ -18,22 +18,22 @@ if (existsSync(`${rootDir}/config.js`)) {
 
 // 默认配置
 const defaultConfig = {
-  port: 3000, // 也可以在环境变量指定
-  TTL: 15, // 微博加载延迟
-  cache: { // 缓存配置
-    NOT_FOUND: {
-      prefix: 'nouser',
-      ttl: 2 * 3600,
-    },
-    RSSXML: { // RSSXML缓存
-      prefix: 'rssxml',
-      ttl: 72 * 3600,
-    },
+  // 程序监听的 TCP 端口，也可以在环境变量指定
+  port: 3000,
+  // 输出 rss feed 文本的 ttl 字段（分钟为单位）
+  rssTTL: 15,
+  // 真正的缓存配置（秒为单位，具体关注代码）
+  cacheTTL: {
+    rssXml: 15 * 60,
+    apiStatusList: 15 * 60,
+    apiIndexInfo: 3 * 24 * 60 * 60,
+    apiLongText: 7 * 24 * 60 * 60,
+    apiDetail: 7 * 24 * 60 * 60,
   },
 };
 
 /**
- * 程序初始化配置
+ * 自定义配置
  */
 export default {
   ...defaultConfig,

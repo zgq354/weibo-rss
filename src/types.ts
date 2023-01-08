@@ -1,7 +1,14 @@
 import { Tracer } from "tracer";
+import { WeiboData } from "./modules/weibo/weibo";
 
 export interface RSSKoaContext {
   cache: CacheInterface;
+  weibo: WeiboData;
+}
+
+export interface RSSKoaState {
+  // cache hit
+  hit: 0 | 1;
 }
 
 export type LoggerInterface = Tracer.Logger<string>;
@@ -9,6 +16,7 @@ export type LoggerInterface = Tracer.Logger<string>;
 export interface CacheInterface {
   set: (key: string, value: any, expire: number) => Promise<void>;
   get: (key: string) => any;
+  memo: <T>(cb: () => T, key: string, expire: number) => Promise<Awaited<T>>;
 }
 
 export interface WeiboStatus {

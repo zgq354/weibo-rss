@@ -27,7 +27,7 @@ export class DomainInvalidError extends Error {
 export const registerRoutes = (
   router: Router<RSSKoaState, RSSKoaContext>
 ) => {
-  router.get('/rss/:id', async (ctx) => {
+  router.get('/rss/user/:id', async (ctx) => {
     const uid = ctx.params['id'];
     try {
       // check uid format
@@ -78,7 +78,7 @@ export const registerRoutes = (
           return;
         case UserNotFoundError.name:
           ctx.status = 404;
-          ctx.body = `找不到用户，可能是用户微博在未登录状态下不可见，或用户已被屏蔽。uid: ${uid}`;
+          ctx.body = `找不到用户，可能用户仅登录可见，不支持订阅。可以通过打开 https://m.weibo.cn/u/:uid 验证（<a href="https://m.weibo.cn/u/${uid}" target="_blank">uid: ${uid}</a>）`;
           return;
         case ThrottledError.name:
           ctx.status = 503;
@@ -86,7 +86,7 @@ export const registerRoutes = (
           return;
         default:
           ctx.status = 500;
-          ctx.body = `未知错误，请检查日志。uid: ${uid}`;
+          ctx.body = `未知错误，需管理员检查日志。uid: ${uid}`;
           break;
       }
     }

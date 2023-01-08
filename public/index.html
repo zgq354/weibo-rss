@@ -44,19 +44,19 @@
         <div class="head">
           <h2 class="text-center">Weibo to RSS</h2>
           <p class="intro">优雅地使用 RSS 阅读器订阅喜欢的微博博主</p>
-          <p>食用方式：<br>1. 在输入框中粘贴你想订阅的微博地址<br>2. 点击“生成订阅源”按钮</p>
+          <p>食用方式：<br>1. 在输入框中粘贴你想订阅的微博地址<br>2. 点击“生成”按钮</p>
           <form id="form">
             <div class="input-group">
               <input id="text-input" type="text" class="form-control" placeholder="https://weibo.com/kaifulee">
               <span class="input-group-btn">
-                <button class="btn btn-default">生成订阅源</button>
+                <button class="btn btn-default">生成</button>
               </span>
             </div>
           </form>
         </div>
         <div class="loading" style="display: none;"><p class="text-center">加载中...</p></div>
         <div class="result" style="display: none;">
-          <p>经本服务转换生成的RSS订阅源地址：</p>
+          <p>生成的RSS订阅源：</p>
           <div class="input-group">
             <input id="foo" type="text" class="form-control" value="">
             <span class="input-group-btn">
@@ -123,7 +123,7 @@ function showResult(uid) {
   }
   var baseUrl = location.href.split("?")[0];
   if (baseUrl.substr(-1, 1) !== "/") baseUrl += "/";
-  var feedUrl = baseUrl + "rss/" + uid;
+  var feedUrl = baseUrl + "rss/user/" + uid;
 
   $("#foo").val(feedUrl);
   for (var reader in prefix) {

@@ -7,9 +7,9 @@
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
 ## 特点
-1. 主页链接一键转换 RSS 订阅地址，简单直接
-2. 严格限制程序对微博的并发请求，避免带来不必要的压力
-3. 基于 `LevelDB` 在本地文件系统做 cache，内存占用极低
+1. 简单：主页链接一键转换 RSS 订阅源地址
+2. 克制：严格限制程序对微博的并发请求，不产生额外压力，作为一个有益的扩展
+3. 省资源：基于 Node.js 实现，采用 [LevelDB](https://github.com/google/leveldb) 在本地文件系统做 cache，内存占用低（60MB 左右）
 
 ## 手动部署
 
@@ -28,7 +28,7 @@ npm install pm2 -g
 pm2 start process.json
 ```
 
-程序会启动一个 HTTP Server，默认监听：`http://0.0.0.0:3000`
+程序会启动一个 HTTP Server，默认监听 `3000` 端口，还需另外配置域名、HTTP 反向代理等
 
 ## 相关项目
 

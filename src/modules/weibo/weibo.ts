@@ -63,7 +63,7 @@ export class WeiboData {
             text: longTextContent
           };
         } catch (error) {
-          logger.error(error);
+          logger.error(error, `uid: ${status?.user?.id}, status: ${status.id}`);
           // fallback to detail
           newStatus = await this.cache.memo(
             () => this.getWeiboDetail(status.id),
@@ -80,7 +80,7 @@ export class WeiboData {
         }
       }
     } catch (error) {
-      logger.error(error);
+      logger.error(error, `uid: ${status?.user?.id}, status: ${status.id}`);
     }
     return newStatus;
   };

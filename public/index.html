@@ -97,20 +97,20 @@ $('#form').on('submit', function (e) {
   $(".loading").show();
 
   var input = $("#text-input").val();
-  var temp = input.match(/weibo\.(com|cn)\/(u\/)?(\d{10})/);
+  var temp = input.match(/weibo\.(com|cn)\/(u|(profile))?\/?(\d{10})/);
   if (!temp) {
-    temp = input.match(/weibo\.(com|cn)\/(u\/)?([^?]+?)($|\?)/);
+    temp = input.match(/weibo\.(com|cn)\/(u|(profile))?\/?([^?]+?)($|\?)/);
     if (!temp) {
       showResult(false);
     } else {
-      $.get("api/domain2uid?domain=" + temp[3], function (data) {
+      $.get("api/domain2uid?domain=" + temp[4], function (data) {
         showResult(data.uid);
       }).fail(function (err) {
         showResult(false);
       });
     }
   } else {
-    showResult(temp[3]);
+    showResult(temp[4]);
   }
 });
 // 显示结果

@@ -8,7 +8,7 @@
 
 ## 特点
 1. 简单：主页链接一键转换 RSS 订阅源地址
-2. 克制：严格限制程序对微博的并发请求，不产生额外压力，作为一个有益的扩展
+2. 克制：严格限制程序对微博的并发请求，不产生额外压力
 3. 省资源：基于 Node.js 实现，采用 [LevelDB](https://github.com/google/leveldb) 在本地文件系统做 cache，内存占用低（60MB 左右）
 
 ## 手动部署
@@ -28,7 +28,13 @@ npm install pm2 -g
 pm2 start process.json
 ```
 
-程序会启动一个 HTTP Server，默认监听 `3000` 端口，还需另外配置域名、HTTP 反向代理等
+程序将启动一个 HTTP Server，默认监听 `3000` 端口  
+还需另外配置域名、HTTP 反向代理等
+
+## 贡献者们
+<a href="https://github.com/zgq354/weibo-rss/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=zgq354/weibo-rss" />
+</a>
 
 ## 相关项目
 

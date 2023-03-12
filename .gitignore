@@ -50,3 +50,4 @@ fabric.properties
 yarn-error.log
 
 .DS_Store
+/config.js

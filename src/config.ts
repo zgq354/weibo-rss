@@ -31,7 +31,7 @@ const defaultConfig = {
     apiDetail: 7 * 24 * 60 * 60,
     apiDomain: 7 * 24 * 60 * 60,
   },
-  imageCache:'https://image.baidu.com/search/down?url='
+  imageCache: 'https://image.baidu.com/search/down?url=',
 };
 
 /**

@@ -114,8 +114,8 @@ export const statusToHTML = (status: WeiboStatus) => {
   if (status.pics) {
     status.pics.forEach(function (item) {
       tempHTML += "<br><br>";
-      var url = config.imageCache ? (config.imageCache + encodeURIComponent(item.url)) : item.url;
-      let largeUrl = config.imageCache ? (config.imageCache + encodeURIComponent(item.large.url)) : item.large.url;
+      const url = config.imageCache ? (config.imageCache + encodeURIComponent(item.url)) : item.url;
+      const largeUrl = config.imageCache ? (config.imageCache + encodeURIComponent(item.large.url)) : item.large.url;
       tempHTML += '<a href="' + largeUrl + '" target="_blank"><img src="' + url+ '"></a>';
     });
   }

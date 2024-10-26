@@ -1,10 +1,10 @@
 import config from "../../config";
 import { CacheInterface, LoggerInterface, WeiboStatus, WeiboUserData } from "../../types";
 import { logger } from "../logger";
-import { createDetailAPI } from "./api/detailAPI";
-import { createDomainAPI, DomainNotFoundError } from "./api/domainAPI";
-import { createIndexAPI, UserNotFoundError } from "./api/indexAPI";
-import { createLongTextAPI } from "./api/longTextAPI";
+import { createDetailAPI, GetWeiboDetailFunc } from "./api/detailAPI";
+import { createDomainAPI, DomainNotFoundError, GetUIDByDomainFunc } from "./api/domainAPI";
+import { createIndexAPI, GetIndexUserInfoFunc, GetWeiboContentListFunc, UserNotFoundError } from "./api/indexAPI";
+import { createLongTextAPI, GetWeiboLongTextFunc } from "./api/longTextAPI";
 
 export {
   DomainNotFoundError,
@@ -14,11 +14,11 @@ export {
 export class WeiboData {
   private cache: CacheInterface;
   private logger: LoggerInterface;
-  private getIndexUserInfo: ReturnType<typeof createIndexAPI>['getIndexUserInfo'];
-  private getWeiboContentList: ReturnType<typeof createIndexAPI>['getWeiboContentList'];
-  private getWeiboDetail: ReturnType<typeof createDetailAPI>['getWeiboDetail'];
-  private getWeiboLongText: ReturnType<typeof createLongTextAPI>['getWeiboLongText'];
-  private getUIDByDomain: ReturnType<typeof createDomainAPI>['getUIDByDomain'];
+  private getIndexUserInfo: GetIndexUserInfoFunc;
+  private getWeiboContentList: GetWeiboContentListFunc;
+  private getWeiboDetail: GetWeiboDetailFunc;
+  private getWeiboLongText: GetWeiboLongTextFunc;
+  private getUIDByDomain: GetUIDByDomainFunc;
 
   constructor(cache: CacheInterface, log: LoggerInterface = logger) {
     this.cache = cache;

@@ -31,3 +31,5 @@ export const createDetailAPI = () => {
     }),
   };
 }
+
+export type GetWeiboDetailFunc = ReturnType<typeof createDetailAPI>['getWeiboDetail'];

@@ -37,3 +37,5 @@ export const createDomainAPI = () => {
     }),
   };
 };
+
+export type GetUIDByDomainFunc = ReturnType<typeof createDomainAPI>['getUIDByDomain'];

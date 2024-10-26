@@ -66,3 +66,7 @@ export const createIndexAPI = () => {
     }),
   };
 };
+
+export type GetIndexUserInfoFunc = ReturnType<typeof createIndexAPI>['getIndexUserInfo'];
+
+export type GetWeiboContentListFunc = ReturnType<typeof createIndexAPI>['getWeiboContentList'];

@@ -34,3 +34,5 @@ export const createLongTextAPI = () => {
     }),
   };
 };
+
+export type GetWeiboLongTextFunc = ReturnType<typeof createLongTextAPI>['getWeiboLongText'];

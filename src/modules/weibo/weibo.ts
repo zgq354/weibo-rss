@@ -1,16 +1,24 @@
 import config from "../../config";
 import { CacheInterface, LoggerInterface, WeiboStatus, WeiboUserData } from "../../types";
 import { logger } from "../logger";
-import { createDetailAPI, createDomainAPI, createIndexAPI, createLongTextAPI } from "./api";
+import { createDetailAPI } from "./api/detailAPI";
+import { createDomainAPI, DomainNotFoundError } from "./api/domainAPI";
+import { createIndexAPI, UserNotFoundError } from "./api/indexAPI";
+import { createLongTextAPI } from "./api/longTextAPI";
+
+export {
+  DomainNotFoundError,
+  UserNotFoundError,
+};
 
 export class WeiboData {
-  cache: CacheInterface;
-  logger: LoggerInterface;
-  getIndexUserInfo: ReturnType<typeof createIndexAPI>['getIndexUserInfo'];
-  getWeiboContentList: ReturnType<typeof createIndexAPI>['getWeiboContentList'];
-  getWeiboDetail: ReturnType<typeof createDetailAPI>['getWeiboDetail'];
-  getWeiboLongText: ReturnType<typeof createLongTextAPI>['getWeiboLongText'];
-  getUIDByDomain: ReturnType<typeof createDomainAPI>['getUIDByDomain'];
+  private cache: CacheInterface;
+  private logger: LoggerInterface;
+  private getIndexUserInfo: ReturnType<typeof createIndexAPI>['getIndexUserInfo'];
+  private getWeiboContentList: ReturnType<typeof createIndexAPI>['getWeiboContentList'];
+  private getWeiboDetail: ReturnType<typeof createDetailAPI>['getWeiboDetail'];
+  private getWeiboLongText: ReturnType<typeof createLongTextAPI>['getWeiboLongText'];
+  private getUIDByDomain: ReturnType<typeof createDomainAPI>['getUIDByDomain'];
 
   constructor(cache: CacheInterface, log: LoggerInterface = logger) {
     this.cache = cache;
@@ -19,11 +27,14 @@ export class WeiboData {
     const { getWeiboDetail } = createDetailAPI();
     const { getWeiboLongText } = createLongTextAPI();
     const { getUIDByDomain } = createDomainAPI();
-    this.getIndexUserInfo = getIndexUserInfo;
-    this.getWeiboContentList = getWeiboContentList;
-    this.getWeiboDetail = getWeiboDetail;
-    this.getWeiboLongText = getWeiboLongText;
-    this.getUIDByDomain = getUIDByDomain;
+    // bind to this
+    Object.assign(this, {
+      getIndexUserInfo,
+      getWeiboContentList,
+      getWeiboDetail,
+      getWeiboLongText,
+      getUIDByDomain,
+    });
   }
 
   /**

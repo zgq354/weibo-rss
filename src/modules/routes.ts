@@ -5,22 +5,19 @@ import Router from '@koa/router';
 import NodeRSS from 'rss';
 import { RSSKoaContext, RSSKoaState } from '../types';
 import config from '../config';
-import { statusToHTML } from './weibo/weibo';
-import { DomainNotFoundError, UserNotFoundError } from './weibo/api';
+import { DomainNotFoundError, statusToHTML, UserNotFoundError } from './weibo/weibo';
 import { ThrottledError } from './throttler';
 import { logger } from './logger';
 
 export class UidInvalidError extends Error {
   constructor(uid: string) {
     super(`uid: ${uid}`);
-    this.name = this.constructor.name;
   }
 }
 
 export class DomainInvalidError extends Error {
   constructor(domain: string) {
     super(`domain: ${domain}`);
-    this.name = this.constructor.name;
   }
 }
 
@@ -71,24 +68,24 @@ export const registerRoutes = (
       // mark hit cache
       ctx.state.hit = cacheMiss ? 0 : 1;
     } catch (error) {
-      switch (error?.name) {
-        case UidInvalidError.name:
-          ctx.status = 404;
-          ctx.body = `找不到用户，传入 UID 格式有误。uid: ${uid}`;
-          return;
-        case UserNotFoundError.name:
-          ctx.status = 404;
-          ctx.body = `找不到用户，可能用户仅登录可见，不支持订阅。可以通过打开 https://m.weibo.cn/u/:uid 验证（<a href="https://m.weibo.cn/u/${uid}" target="_blank">uid: ${uid}</a>）`;
-          return;
-        case ThrottledError.name:
-          ctx.status = 503;
-          ctx.body = `暂时无法拉取到数据，请稍后再试。uid: ${uid}`;
-          return;
-        default:
-          ctx.status = 500;
-          ctx.body = `未知错误，需管理员检查日志。uid: ${uid}`;
-          break;
+      if (error instanceof UidInvalidError) {
+        ctx.status = 404;
+        ctx.body = `找不到用户，传入 UID 格式有误。uid: ${uid}`;
+        return;
       }
+      if (error instanceof UserNotFoundError) {
+        ctx.status = 404;
+        ctx.body = `找不到用户，可能用户仅登录可见，不支持订阅。可以通过打开 https://m.weibo.cn/u/:uid 验证（<a href="https://m.weibo.cn/u/${uid}" target="_blank">uid: ${uid}</a>）`;
+        return;
+      }
+      if (error instanceof ThrottledError) {
+        ctx.status = 503;
+        ctx.body = `暂时无法拉取到数据，请稍后再试。uid: ${uid}`;
+        return;
+      }
+      ctx.status = 500;
+      ctx.body = `未知错误，需管理员检查日志。uid: ${uid}`;
+      logger.error(error);
     }
   });
 
@@ -104,7 +101,7 @@ export const registerRoutes = (
       const uid = await ctx.cache.memo(
         () => {
           cacheMiss = true;
-          return ctx.weibo.getUIDByDomain(domain);
+          return ctx.weibo.fetchUIDByDomain(domain);
         },
         `dm-${domain}`,
         config.cacheTTL.apiDomain,
@@ -118,24 +115,20 @@ export const registerRoutes = (
       // mark hit cache
       ctx.state.hit = cacheMiss ? 0 : 1;
     } catch (error) {
-      switch (error?.name) {
-        case DomainInvalidError.name:
-        case DomainNotFoundError.name:
-          ctx.status = 404;
-          ctx.body = {
-            success: false,
-            msg: '找不到微博，可能是地址格式不正确',
-          };
-          return;
-        default:
-          logger.error(error);
-          ctx.status = 500;
-          ctx.body = {
-            success: false,
-            msg: '获取数据时发生了错误'
-          };
-          break;
+      if (error instanceof DomainInvalidError || error instanceof DomainNotFoundError) {
+        ctx.status = 404;
+        ctx.body = {
+          success: false,
+          msg: '找不到用户，可能是地址格式不正确',
+        };
+        return;
       }
+      logger.error(error);
+      ctx.status = 500;
+      ctx.body = {
+        success: false,
+        msg: '获取数据时发生了错误'
+      };
     }
   })
 };

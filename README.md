@@ -13,18 +13,18 @@
 
 ## 手动部署
 
-依赖：`Node.js`  
+依赖：`Node.js` 和 `pnpm`  
 
 安装：
 ```
 git clone https://github.com/zgq354/weibo-rss.git
 cd weibo-rss
-npm i && npm run build
+pnpm i && pnpm build
 ```
 
 启动：
 ```
-npm install pm2 -g
+pnpm install pm2 -g
 pm2 start process.json
 ```
 

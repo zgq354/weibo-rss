@@ -32,6 +32,7 @@
     "@types/rss": "^0.0.29",
     "cross-env": "^7.0.2",
     "jest": "^29.7.0",
+    "node-network-devtools": "^1.0.19",
     "ts-jest": "^29.0.5",
     "ts-node": "^10.9.1",
     "ts-node-dev": "^2.0.0",

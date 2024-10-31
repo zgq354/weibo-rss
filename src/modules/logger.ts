@@ -3,7 +3,7 @@
  */
 import * as tracer from 'tracer';
 
-const debug = process.env.DEBUG;
+export const debug = process.env.DEBUG;
 
 export const logger = tracer.colorConsole({
   format : "[{{timestamp}}] [{{title}}] {{message}}",

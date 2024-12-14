@@ -9,9 +9,6 @@ import { registerRoutes } from "./modules/routes";
 import { RSSKoaContext, RSSKoaState } from "./types";
 import { LevelCache } from "./modules/cache";
 import { WeiboData } from "./modules/weibo/weibo";
-import { register } from "node-network-devtools";
-
-debug && register();
 
 const koaApp = new Koa<RSSKoaState, RSSKoaContext>();
 const initApp = () => {
